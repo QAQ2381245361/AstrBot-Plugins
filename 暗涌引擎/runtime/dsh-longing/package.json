@@ -1,0 +1,66 @@
+{
+  "name": "dsh-longing",
+  "version": "1.15.0",
+  "description": "Longing (暗涌): 会流动的欲望状态 —— 七维数值互相牵制、向上限收敛、被一句话推动；带网页面板、心情日记和第一人称注入块，可接入任意聊天通道。",
+  "type": "module",
+  "main": "./src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mearihaka/dsh-longing.git"
+  },
+  "homepage": "https://github.com/mearihaka/dsh-longing#readme",
+  "bugs": {
+    "url": "https://github.com/mearihaka/dsh-longing/issues"
+  },
+  "author": "mearihaka",
+  "scripts": {
+    "test": "node --test --test-concurrency=1",
+    "doctor": "node tools/doctor.mjs",
+    "preview": "node tools/preview.mjs"
+  },
+  "exports": {
+    ".": {
+      "import": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "persona",
+    "desire"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "dsh": ">=0.2.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": ">=4.0.1",
+    "@deepseek-ai/schemastery": ">=3.18.1"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": false
+    },
+    "@deepseek-ai/schemastery": {
+      "optional": false
+    }
+  },
+  "files": [
+    "src",
+    "panel",
+    "docs",
+    "cordis.patch.yml",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

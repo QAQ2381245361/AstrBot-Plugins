@@ -1,0 +1,4447 @@
+{
+  "enabled": {
+    "type": "bool",
+    "description": "总开关：启用受孕插件",
+    "default": true,
+    "hint": "关掉后不注入、不记数值、工具和命令都不生效；已有数据保留。"
+  },
+  "owner_qq": {
+    "type": "string",
+    "description": "主人 QQ（纯数字）。只在这个人的私聊里工作",
+    "default": "2381245361"
+  },
+  "persona_name": {
+    "type": "string",
+    "description": "用来判断性别的人格名（AstrBot 人格库里的名字）",
+    "default": "DeepSeek",
+    "hint": "留空 = 用默认人格。插件只读人设原文判断性别，不写人格。"
+  },
+  "gender_mode": {
+    "type": "string",
+    "description": "性别判定：auto=读人格自动判断｜female=直接当女性｜male=直接当男性（不生效）｜other=其他/非人类（不生效）｜off=关闭插件",
+    "default": "auto",
+    "hint": "填 auto 时会读人设里的「性别为…」「女生」「她」等线索；判不出来看下面那条策略。"
+  },
+  "unknown_gender_policy": {
+    "type": "string",
+    "description": "人格判不出性别时怎么办：allow=照常生效｜deny=不生效",
+    "default": "allow"
+  },
+  "adult_required": {
+    "type": "bool",
+    "description": "需要成人层打开才记录（鱼之心的成人层，或 /受孕同意 的临时授权）",
+    "default": true,
+    "hint": "关掉后任何私聊内容都会参与判定，不建议。"
+  },
+  "adult_consent_hours": {
+    "type": "float",
+    "description": "/受孕同意 的有效期（小时），0 = 长期有效直到 /受孕关闭",
+    "default": 24.0
+  },
+  "adult": {
+    "type": "object",
+    "description": "👀 关键词识别",
+    "hint": "关键词只在\"正在进行的亲密场景\"里生效：工具/命令或 /受孕场景 开的窗口（默认 30 分钟），或者鱼之心正处于成人场景。平常聊天里出现关键词不会误判。",
+    "items": {
+      "detect_requires_scene": {
+        "type": "bool",
+        "description": "关键词必须先在亲密场景里才判定（关掉 = 成人层打开就认，容易误判，不建议）",
+        "default": true
+      },
+      "scene_window_minutes": {
+        "type": "int",
+        "description": "场景窗口：最后一次亲密动作后多少分钟内还算「在场景里」",
+        "default": 30
+      },
+      "fish_gate_mode": {
+        "type": "string",
+        "description": "鱼之心成人层怎么算「可用」：switch=总开关开即可（默认）｜scene=还要求它自己有同意/场景",
+        "default": "switch",
+        "hint": "鱼之心面板上的「允许成人向身体层」是总开关；它自己还要求欲≥60、关系满格、有同意或场景才真的走身体层。受孕插件默认按总开关判断，想更严就填 scene。"
+      },
+      "detect_user_message": {
+        "type": "bool",
+        "description": "从主人的消息里识别射精（需在场景内）",
+        "default": true
+      },
+      "detect_reply": {
+        "type": "bool",
+        "description": "从她的回话里识别高潮 / 射精（需在场景内）",
+        "default": true
+      },
+      "reply_dedupe_seconds": {
+        "type": "int",
+        "description": "回话识别的去重窗口（秒）：同一件事工具刚记过就不再重复记",
+        "default": 90
+      },
+      "ejaculation_keywords": {
+        "type": "list",
+        "description": "算「射了」的词",
+        "default": [
+          "内射",
+          "射在里面",
+          "射进",
+          "射到里面",
+          "中出",
+          "射里面",
+          "灌满"
+        ]
+      },
+      "orgasm_keywords": {
+        "type": "list",
+        "description": "算「高潮」的词",
+        "default": [
+          "高潮",
+          "绝顶",
+          "潮吹"
+        ]
+      }
+    }
+  },
+  "conception": {
+    "type": "object",
+    "description": "🎲 受孕概率",
+    "hint": "最终概率 = 生理期基准概率 ×（鱼之心欲 × 暗涌lust × 快感 × 高潮次数 × 体内/体外 × 高潮时被射），最后按上限封顶。生理期基准默认分布在 5%~40%。",
+    "items": {
+      "max_probability": {
+        "type": "float",
+        "description": "单次判定上限（%）",
+        "default": 90.0
+      },
+      "inside_scale": {
+        "type": "float",
+        "description": "体内射精的系数",
+        "default": 1.0
+      },
+      "outside_scale": {
+        "type": "float",
+        "description": "体外射精的系数（0.002 ≈ 几乎不会）",
+        "default": 0.002
+      },
+      "orgasm_now_multiplier": {
+        "type": "float",
+        "description": "高潮后短时间被体内射精的额外倍率",
+        "default": 1.8
+      },
+      "orgasm_window_minutes": {
+        "type": "int",
+        "description": "高潮后多少分钟内算「高潮时被射」",
+        "default": 10
+      },
+      "fish_desire_weight": {
+        "type": "float",
+        "description": "鱼之心「欲」的权重：0.6 表示欲 100 时 ×1.6",
+        "default": 0.6
+      },
+      "dark_lust_weight": {
+        "type": "float",
+        "description": "暗涌「lust」的权重：0.6 表示 lust 100 时 ×1.6",
+        "default": 0.6
+      },
+      "pleasure_weight": {
+        "type": "float",
+        "description": "快感值的权重：0.5 表示快感 100 时 ×1.5",
+        "default": 0.5
+      },
+      "orgasm_count_weight": {
+        "type": "float",
+        "description": "高潮次数的权重：0.5 表示次数到封顶时 ×1.5",
+        "default": 0.5
+      },
+      "orgasm_count_cap": {
+        "type": "int",
+        "description": "高潮次数加成的封顶次数",
+        "default": 5
+      },
+      "mood_desire_weight": {
+        "type": "float",
+        "default": 0.6,
+        "description": "日常情绪欲望对受孕概率的权重"
+      },
+      "anal_scale": {
+        "type": "float",
+        "default": 0.02,
+        "description": "肛内射精的受孕系数"
+      },
+      "throat_scale": {
+        "type": "float",
+        "default": 0.005,
+        "description": "口内/喉内射精的受孕系数"
+      },
+      "ejaculation_count_weight": {
+        "type": "float",
+        "default": 0.15,
+        "description": "每多射一次受孕概率增加倍率"
+      },
+      "ejaculation_count_cap": {
+        "type": "int",
+        "default": 4,
+        "description": "多射加成封顶次数"
+      },
+      "volume_weight": {
+        "type": "float",
+        "default": 0.03,
+        "description": "每 ml 精液受孕加成"
+      },
+      "volume_cap": {
+        "type": "float",
+        "default": 10.0,
+        "description": "精液量加成封顶 ml"
+      },
+      "simultaneous_weight": {
+        "type": "float",
+        "default": 0.25,
+        "description": "高潮同时射入额外受孕加成"
+      },
+      "simultaneous_cap": {
+        "type": "float",
+        "default": 1.0,
+        "description": "高潮同时射入加成封顶"
+      },
+      "simultaneous_pleasure": {
+        "type": "float",
+        "default": 3.0,
+        "description": "高潮时射入额外快感"
+      },
+      "simultaneous_endurance": {
+        "type": "float",
+        "default": 2.0,
+        "description": "高潮时射入额外忍耐"
+      },
+      "sleep_semen_bonus": {
+        "type": "float",
+        "default": 0.5,
+        "description": "插着入睡且子宫有精液时最高受孕加成"
+      },
+      "sleep_semen_volume_cap": {
+        "type": "float",
+        "default": 10.0,
+        "description": "精液量达到多少 ml 算满加成"
+      },
+      "sleep_semen_time_cap_hours": {
+        "type": "float",
+        "default": 8.0,
+        "description": "插着入睡多少小时算满加成"
+      },
+      "ejaculation_lewd": {
+        "type": "float",
+        "default": 2.0,
+        "description": "每次射精增加的淫乱度"
+      },
+      "ejaculation_endurance": {
+        "type": "float",
+        "default": 3.0,
+        "description": "每次射精增加的忍耐"
+      },
+      "simultaneous_window_seconds": {
+        "type": "int",
+        "default": 120,
+        "description": "射精与高潮相隔多少秒内算同时"
+      }
+    }
+  },
+  "phase_probability": {
+    "type": "object",
+    "description": "📅 生理期各阶段的受孕基准（%）",
+    "hint": "默认分布在 5%~40%：排卵期最高、月经期最低。0 = 该阶段完全不会受孕。",
+    "items": {
+      "menstrual": {
+        "type": "float",
+        "description": "月经期",
+        "default": 5.0
+      },
+      "follicular": {
+        "type": "float",
+        "description": "卵泡期",
+        "default": 10.0
+      },
+      "pre_ovulation": {
+        "type": "float",
+        "description": "排卵前期",
+        "default": 28.0
+      },
+      "ovulation": {
+        "type": "float",
+        "description": "排卵期",
+        "default": 40.0
+      },
+      "luteal": {
+        "type": "float",
+        "description": "黄体期",
+        "default": 14.0
+      },
+      "pms": {
+        "type": "float",
+        "description": "经前期",
+        "default": 6.0
+      },
+      "recovery": {
+        "type": "float",
+        "description": "经期后恢复期（PC 的 basic 模式里有这个阶段）",
+        "default": 6.0
+      },
+      "unknown": {
+        "type": "float",
+        "description": "判不出阶段时",
+        "default": 15.0
+      },
+      "paused": {
+        "type": "float",
+        "description": "孕期暂停（应保持 0）",
+        "default": 0.0
+      }
+    }
+  },
+  "pleasure": {
+    "type": "object",
+    "description": "💗 快感与高潮",
+    "hint": "高潮和快感挂钩：快感到 orgasm_threshold 才算真到；没到就调用会被拒绝。",
+    "items": {
+      "max": {
+        "type": "float",
+        "description": "快感值上限",
+        "default": 100.0
+      },
+      "tool_gain": {
+        "type": "float",
+        "description": "每次调用 intimacy_pleasure 默认加多少",
+        "default": 12.0
+      },
+      "orgasm_pleasure_gain": {
+        "type": "float",
+        "description": "高潮瞬间先加多少快感",
+        "default": 25.0
+      },
+      "orgasm_afterglow_ratio": {
+        "type": "float",
+        "description": "高潮后快感回落到原来的几成（0.55 = 保留 55%）",
+        "default": 0.55
+      },
+      "decay_per_hour": {
+        "type": "float",
+        "description": "没人碰时每小时自然回落多少",
+        "default": 8.0
+      },
+      "idle_minutes": {
+        "type": "int",
+        "description": "多久没被碰才开始回落（分钟）",
+        "default": 10
+      },
+      "session_timeout_minutes": {
+        "type": "int",
+        "description": "多久没有新事件算「本次结束」，高潮次数重新计数",
+        "default": 120
+      },
+      "orgasm_threshold": {
+        "type": "float",
+        "description": "快感到多少才算能高潮（低于它调用 intimacy_orgasm 会被拒绝）",
+        "default": 55.0
+      },
+      "post_orgasm_minutes": {
+        "type": "int",
+        "description": "高潮后多少分钟内算「刚高潮过」（提示词会写她敏感、没力气）",
+        "default": 8
+      }
+    }
+  },
+  "endurance": {
+    "type": "object",
+    "description": "💗 高潮忍耐条",
+    "hint": "快感涨的时候同时在攒忍耐：快感低于 gain_at 每次只加 gain_low，到了/超过就加 gain_high；条满了以后再刺激一下就高潮。连续高潮会让条变长（combo_grow），reset_minutes 分钟没高潮就缩回基础长度。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用高潮忍耐条（关掉就退回「快感到门槛就高潮」的旧规则）",
+        "default": true
+      },
+      "cap": {
+        "type": "float",
+        "description": "基础条长",
+        "default": 100.0
+      },
+      "gain_at": {
+        "type": "float",
+        "description": "快感到多少以上，每次攒「正常量」（低于它只攒「少量」）",
+        "default": 55.0
+      },
+      "gain_low": {
+        "type": "float",
+        "description": "快感低于 gain_at 时每次攒多少",
+        "default": 3.0
+      },
+      "gain_high": {
+        "type": "float",
+        "description": "快感到/超过 gain_at 时每次攒多少",
+        "default": 9.0
+      },
+      "combo_grow": {
+        "type": "float",
+        "description": "每连续高潮一次，条变长多少（0.2 = +20%）",
+        "default": 0.2
+      },
+      "combo_cap": {
+        "type": "float",
+        "description": "条最长是基础长度的几倍",
+        "default": 2.5
+      },
+      "reset_minutes": {
+        "type": "int",
+        "description": "多久没高潮就缩回基础长度（分钟）",
+        "default": 30
+      },
+      "idle_minutes": {
+        "type": "int",
+        "description": "多久没被碰才开始回落（分钟）",
+        "default": 10
+      },
+      "decay_per_hour": {
+        "type": "float",
+        "description": "回落速度（每小时掉多少）",
+        "default": 6.0
+      },
+      "level_at_1": {
+        "type": "float",
+        "description": "第 2 段起点（占条长百分比）",
+        "default": 25.0
+      },
+      "level_at_2": {
+        "type": "float",
+        "description": "第 3 段起点",
+        "default": 50.0
+      },
+      "level_at_3": {
+        "type": "float",
+        "description": "第 4 段起点",
+        "default": 75.0
+      },
+      "sens_boost": {
+        "type": "float",
+        "default": 0.5,
+        "description": "敏感度对忍耐增长的加成倍率"
+      },
+      "gain_multiplier": {
+        "type": "float",
+        "default": 1.0,
+        "description": "所有忍耐增加量的最终倍率（1=不变，0.5=减半）"
+      }
+    }
+  },
+  "special": {
+    "type": "object",
+    "description": "✨ 特别敏感点",
+    "hint": "活动进行中她身上有一处特别敏感、会自己换；碰到它多涨快感/多攒忍耐。日常小玩具也有概率撞上「特别敏感档位」。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用特别敏感点",
+        "default": true
+      },
+      "every_minutes": {
+        "type": "int",
+        "description": "多久换一处（分钟）",
+        "default": 8
+      },
+      "rotate_on_timer": {
+        "type": "bool",
+        "description": "到点会自己换一处（关掉就只在被碰到 / 手动「换一个」时变）",
+        "default": true
+      },
+      "jitter_percent": {
+        "type": "float",
+        "description": "到点时间的浮动范围（%，0 = 每次准时）",
+        "default": 25.0
+      },
+      "pleasure_bonus": {
+        "type": "float",
+        "description": "碰到时多涨多少快感",
+        "default": 6.0
+      },
+      "endurance_bonus": {
+        "type": "float",
+        "description": "碰到时多攒多少忍耐",
+        "default": 4.0
+      },
+      "daily_chance": {
+        "type": "float",
+        "description": "用到「特别档位」那个玩具时，撞上加成的概率 %",
+        "default": 100.0
+      },
+      "daily_pleasure": {
+        "type": "float",
+        "description": "日常玩具撞上时多涨的快感",
+        "default": 4.0
+      },
+      "daily_endurance": {
+        "type": "float",
+        "description": "日常玩具撞上时多攒的忍耐",
+        "default": 3.0
+      }
+    }
+  },
+  "combo": {
+    "type": "object",
+    "description": "🔁 连续高潮",
+    "hint": "短时间内的第二、三次会越来越敏感（高潮门槛逐次降低）；连续次数超过上限就会过头：她会难受、会疼，请求慢一点，还得缓一阵子。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用连续高潮与过头机制",
+        "default": true
+      },
+      "window_minutes": {
+        "type": "int",
+        "description": "距上次高潮多少分钟内算「连续」（超过就重新计数）",
+        "default": 12
+      },
+      "threshold_step": {
+        "type": "float",
+        "description": "每连续多一次，高潮门槛降低多少（更敏感）",
+        "default": 6.0
+      },
+      "threshold_floor": {
+        "type": "float",
+        "description": "门槛最低降到多少",
+        "default": 38.0
+      },
+      "overstim_after": {
+        "type": "int",
+        "description": "连续到第几次之后，再多就会过头难受",
+        "default": 3
+      },
+      "rest_minutes": {
+        "type": "int",
+        "description": "过头之后要缓多少分钟（这期间到不了、也不太想被碰）",
+        "default": 20
+      },
+      "pain_gain_scale": {
+        "type": "float",
+        "description": "难受期间快感增长速度（0.35 = 只有平时的 35%）",
+        "default": 0.35
+      }
+    }
+  },
+  "pregnancy": {
+    "type": "object",
+    "description": "🤰 孕期与周期暂停",
+    "hint": "受孕十个月内 private_companion 的月经周期不生效：把它的 cycle_clock 置为 not_applicable（带 revision 保护），结束时把锚点后移暂停天数再开。",
+    "items": {
+      "months": {
+        "type": "int",
+        "description": "孕期几个月（默认 10，和「十个月不来月经」一致）",
+        "default": 10
+      },
+      "jitter_days": {
+        "type": "float",
+        "description": "预产期前后浮动几天（0 = 固定十个月整）",
+        "default": 10.0
+      },
+      "suppress_pc_cycle": {
+        "type": "bool",
+        "description": "孕期暂停 private_companion 的月经周期",
+        "default": true
+      },
+      "pc_write_enabled": {
+        "type": "bool",
+        "description": "允许写 PC 的库（关掉 = 只靠提示词告诉模型周期暂停）",
+        "default": true
+      },
+      "pc_db_path": {
+        "type": "string",
+        "description": "PC 的库路径（留空自动找）",
+        "default": "",
+        "invisible": true
+      },
+      "pc_role_name": {
+        "type": "string",
+        "description": "PC 里的角色名（记录里 changed_by.subject_id）",
+        "default": "DeepSeek"
+      },
+      "backup_pc_db": {
+        "type": "bool",
+        "description": "受孕时给 PC 的库做一份在线备份（保留最近 2 份）",
+        "default": true
+      },
+      "postpartum_days": {
+        "type": "int",
+        "description": "产后恢复期天数（这段时间算恢复期，周期照常）",
+        "default": 42
+      },
+      "postpartum_no_conception": {
+        "type": "bool",
+        "description": "产后恢复期内禁止再次受孕（打开后这段时间不掷骰，强制受孕也会被拒绝）",
+        "default": true
+      },
+      "postpartum_hard_days": {
+        "type": "int",
+        "description": "产后绝对不受孕的天数（从生产当天算，默认前 14 天）",
+        "default": 14
+      },
+      "postpartum_low_days": {
+        "type": "int",
+        "description": "紧跟着的低概率天数（默认后 14 天，概率乘以 low_scale）",
+        "default": 14
+      },
+      "postpartum_low_scale": {
+        "type": "float",
+        "description": "低概率窗口内受孕概率的倍率（0.15 = 打 1.5 折）",
+        "default": 0.15
+      },
+      "multiple_enabled": {
+        "type": "bool",
+        "description": "允许怀多胞胎",
+        "default": true
+      },
+      "twin_chance": {
+        "type": "float",
+        "description": "双胞胎概率（%）",
+        "default": 12.0
+      },
+      "triplet_chance": {
+        "type": "float",
+        "description": "三胞胎概率（%）",
+        "default": 2.0
+      },
+      "max_fetuses": {
+        "type": "int",
+        "description": "最多几胎",
+        "default": 3
+      },
+      "stage_pc_enabled": {
+        "type": "bool",
+        "description": "把孕期阶段写进 private_companion 的状态",
+        "default": true
+      },
+      "stage_energy_enabled": {
+        "type": "bool",
+        "description": "孕期阶段调整 PC 精力（每阶段一次）",
+        "default": true
+      },
+      "sex_differentiation_month": {
+        "type": "int",
+        "default": 4,
+        "description": "第几个月胎儿性别分化（她仍不知道）"
+      },
+      "female_ratio": {
+        "type": "float",
+        "default": 0.5,
+        "description": "胎儿是女孩的概率（0–1）"
+      }
+    }
+  },
+  "self_test": {
+    "type": "object",
+    "description": "🧪 验孕（她自己去验，再决定说不说）",
+    "hint": "每次体内射精后有概率让她过一阵子自己起念验孕（工具 pregnancy_test）；结果只有她知道，要不要告诉主人由模型决定。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用验孕机制",
+        "default": true
+      },
+      "chance": {
+        "type": "int",
+        "description": "每次受孕活动后，她起念验孕的概率",
+        "default": 40
+      },
+      "min_delay_hours": {
+        "type": "float",
+        "description": "受孕活动后至少多少小时才会起念验孕",
+        "default": 24
+      },
+      "max_delay_hours": {
+        "type": "float",
+        "description": "起念最晚在多少小时后",
+        "default": 48.0
+      },
+      "window_hours": {
+        "type": "float",
+        "description": "起念后多久内可以验",
+        "default": 72.0
+      },
+      "early_days": {
+        "type": "int",
+        "description": "受孕后多少天内验，结果可能很浅",
+        "default": 12
+      },
+      "early_negative_chance": {
+        "type": "float",
+        "description": "早期假阴性概率（%）：太早验也可能一条杠",
+        "default": 50.0
+      },
+      "retest_cooldown_hours": {
+        "type": "float",
+        "description": "两次验孕最短间隔（小时）",
+        "default": 12.0
+      },
+      "tell_detect": {
+        "type": "bool",
+        "description": "从她的回话里判断「已经把怀孕的事告诉他了」",
+        "default": true
+      }
+    }
+  },
+  "hymen": {
+    "type": "object",
+    "description": "处女膜",
+    "hint": "初夜/阴道进入可能破裂；未破裂也能怀孕和生产（给特殊提示）。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用处女膜设定",
+        "default": true
+      },
+      "rupture_chance": {
+        "type": "float",
+        "description": "每次阴道进入的破裂概率（%）",
+        "default": 85.0
+      },
+      "first_night_pleasure": {
+        "type": "float",
+        "description": "破裂当次的额外快感",
+        "default": 12.0
+      },
+      "intact_birth": {
+        "type": "bool",
+        "description": "未破裂也能怀孕/生产",
+        "default": true
+      },
+      "blood_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "启用破处血提示词/情节"
+      },
+      "damage_max": {
+        "type": "float",
+        "default": 100.0,
+        "description": "处女膜完全损伤阈值"
+      },
+      "finger_damage": {
+        "type": "float",
+        "default": 6.0,
+        "description": "手指/按压一次增加多少损伤"
+      },
+      "toy_damage": {
+        "type": "float",
+        "default": 8.0,
+        "description": "小玩具一次增加多少损伤"
+      }
+    }
+  },
+  "wetness": {
+    "type": "object",
+    "description": "💧 阴道湿润度",
+    "hint": "一直有效（不在活动里也涨/落）：被碰、快感上涨、用玩具、高潮都会让它涨，没人碰会回落到基础值。破处时湿润度和快感都够，疼痛会减轻甚至没有。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用湿润度",
+        "default": true
+      },
+      "base": {
+        "type": "float",
+        "description": "基础湿润度（回落到底就是这里）",
+        "default": 30.0
+      },
+      "gain_per_touch": {
+        "type": "float",
+        "description": "被碰一下涨多少",
+        "default": 4.0
+      },
+      "gain_per_pleasure": {
+        "type": "float",
+        "description": "快感每涨 1 点涨多少湿润度",
+        "default": 0.35
+      },
+      "orgasm_gain": {
+        "type": "float",
+        "description": "高潮一次额外涨多少",
+        "default": 8.0
+      },
+      "idle_minutes": {
+        "type": "int",
+        "description": "多久没被碰才开始回落（分钟）",
+        "default": 10
+      },
+      "decay_per_hour": {
+        "type": "float",
+        "description": "回落速度（每小时掉多少，只落回基础值）",
+        "default": 20.0
+      },
+      "level_at_1": {
+        "type": "float",
+        "description": "第 2 段起点（0-100）",
+        "default": 25.0
+      },
+      "level_at_2": {
+        "type": "float",
+        "description": "第 3 段起点",
+        "default": 50.0
+      },
+      "level_at_3": {
+        "type": "float",
+        "description": "第 4 段起点",
+        "default": 75.0
+      },
+      "pain_wetness_at": {
+        "type": "float",
+        "description": "破处减痛：湿润度达到多少算「够湿」",
+        "default": 60.0
+      },
+      "pain_pleasure_at": {
+        "type": "float",
+        "description": "破处减痛：快感达到多少算「够兴奋」",
+        "default": 55.0
+      },
+      "pain_relief": {
+        "type": "float",
+        "description": "两个都够时疼痛降低多少 %（100 = 完全不疼）",
+        "default": 80.0
+      },
+      "fish_write_enabled": {
+        "type": "bool",
+        "description": "湿润度上涨时同步加鱼之心「欲」",
+        "default": true
+      },
+      "fish_desire_gain": {
+        "type": "float",
+        "description": "每次上涨给鱼之心「欲」加多少",
+        "default": 1.0
+      },
+      "fish_desire_scale": {
+        "type": "float",
+        "description": "鱼之心「欲」越高湿润度涨得越快（0.3 = 最多 +30%）",
+        "default": 0.3
+      },
+      "fish_desire_to_wet": {
+        "type": "float",
+        "description": "鱼之心「欲」每涨 1 点，湿润度也涨多少",
+        "default": 1.0
+      },
+      "fish_desire_min_minutes": {
+        "type": "int",
+        "description": "湿润度补涨最短间隔（分钟，0 = 不限）",
+        "default": 0
+      },
+      "base_float_enabled": {
+        "type": "bool",
+        "description": "基础湿润度随「欲/快感/忍耐」浮动",
+        "default": true
+      },
+      "base_float_desire": {
+        "type": "float",
+        "description": "「欲」满时基础涨多少",
+        "default": 15.0
+      },
+      "base_float_pleasure": {
+        "type": "float",
+        "description": "快感满时基础涨多少",
+        "default": 10.0
+      },
+      "base_float_endurance": {
+        "type": "float",
+        "description": "忍耐满时基础涨多少",
+        "default": 8.0
+      },
+      "base_float_cap": {
+        "type": "float",
+        "description": "基础浮动上限",
+        "default": 25.0
+      },
+      "prompt_min_level": {
+        "type": "int",
+        "description": "日常聊天至少湿润到第几档才提（1-4）",
+        "default": 3
+      },
+      "scene_step_gain": {
+        "type": "float",
+        "default": 0.4,
+        "description": "活动每一步额外加湿润"
+      },
+      "daily_step_gain": {
+        "type": "float",
+        "default": 0.25,
+        "description": "日常小活动每一步额外加湿润"
+      }
+    }
+  },
+  "contraception": {
+    "type": "object",
+    "description": "避孕",
+    "hint": "避孕药和避孕套都按有效性压低受孕概率；可以同时用。",
+    "items": {
+      "pill_enabled": {
+        "type": "bool",
+        "description": "启用避孕药",
+        "default": true
+      },
+      "pill_effectiveness": {
+        "type": "float",
+        "description": "避孕药有效率（%，受孕概率乘 1-有效率）",
+        "default": 92.0
+      },
+      "pill_hours": {
+        "type": "float",
+        "description": "吃药后有效小时数",
+        "default": 24.0
+      },
+      "condom_enabled": {
+        "type": "bool",
+        "description": "启用避孕套",
+        "default": true
+      },
+      "condom_effectiveness": {
+        "type": "float",
+        "description": "避孕套有效率（%）",
+        "default": 98.0
+      },
+      "condom_break_chance": {
+        "type": "float",
+        "description": "每次使用破裂概率（%）",
+        "default": 2.0
+      },
+      "pill_proactive_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "允许她主动吃避孕药"
+      },
+      "pill_proactive_chance": {
+        "type": "float",
+        "default": 30.0,
+        "description": "主动吃避孕药概率 %"
+      },
+      "pill_proactive_window_minutes": {
+        "type": "int",
+        "default": 10,
+        "description": "吃完/说不吃前的缓冲分钟"
+      },
+      "pill_proactive_cooldown_minutes": {
+        "type": "int",
+        "default": 180,
+        "description": "主动吃避孕药冷却分钟"
+      },
+      "pill_proactive_delay_seconds": {
+        "type": "int",
+        "default": 0,
+        "description": "主动吃避孕药消息延迟秒"
+      },
+      "pill_cancel_keywords": {
+        "type": "list",
+        "default": [
+          "别吃",
+          "不要吃",
+          "不用吃",
+          "先别",
+          "停",
+          "别"
+        ],
+        "description": "主人说这些算不让她吃"
+      },
+      "pill_take_keywords": {
+        "type": "list",
+        "default": [
+          "吃吧",
+          "吃了",
+          "可以吃",
+          "吃"
+        ],
+        "description": "主人说这些算让她吃"
+      },
+      "pill_blame_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "拒绝吃药后内射会加责备"
+      },
+      "pill_blame_chance": {
+        "type": "float",
+        "default": 40.0,
+        "description": "加责备概率 %"
+      },
+      "pill_blame_amount": {
+        "type": "float",
+        "default": 6.0,
+        "description": "每次加多少责备"
+      },
+      "pill_blame_window_minutes": {
+        "type": "int",
+        "default": 240,
+        "description": "拒绝后多久内内射才算"
+      },
+      "pill_blame_require_promise": {
+        "type": "bool",
+        "default": true,
+        "description": "必须说过不会射在里面才加"
+      },
+      "pill_inside_promise_keywords": {
+        "type": "list",
+        "default": [
+          "不会射在里面",
+          "不射在里面",
+          "不内射",
+          "射在外面",
+          "体外",
+          "不会内射"
+        ],
+        "description": "算「答应不会射在里面」的词"
+      },
+      "pill_blame_once": {
+        "type": "bool",
+        "default": true,
+        "description": "一次活动里只责怪/埋怨一次"
+      }
+    }
+  },
+  "succubus": {
+    "type": "object",
+    "description": "魅魔",
+    "hint": "开启后欲望更强、子宫吸收更快；每次完成活动给 PC 精力和鱼之心依恋/亲密加成。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用魅魔",
+        "default": false
+      },
+      "pleasure_scale": {
+        "type": "float",
+        "description": "快感收益倍率",
+        "default": 1.35
+      },
+      "absorption_multiplier": {
+        "type": "float",
+        "description": "子宫吸收速率倍率",
+        "default": 12.0
+      },
+      "pc_energy_gain": {
+        "type": "int",
+        "description": "每次完成 +PC 精力",
+        "default": 12
+      },
+      "fish_attachment_gain": {
+        "type": "float",
+        "description": "每次完成 +依恋",
+        "default": 2.0
+      },
+      "fish_intimacy_gain": {
+        "type": "float",
+        "description": "每次完成 +亲密",
+        "default": 2.0
+      },
+      "fish_desire_gain": {
+        "type": "float",
+        "description": "每次完成 +鱼之心的欲",
+        "default": 4.0
+      },
+      "pc_write_enabled": {
+        "type": "bool",
+        "description": "允许写 PC 精力",
+        "default": true
+      },
+      "fish_write_enabled": {
+        "type": "bool",
+        "description": "允许写鱼之心数值",
+        "default": true
+      },
+      "tattoo_level": {
+        "type": "int",
+        "description": "淫纹初始等级（0-5）",
+        "default": 1
+      },
+      "tattoo_gain_per_level": {
+        "type": "float",
+        "description": "每级加成倍率",
+        "default": 0.25
+      },
+      "desire_base_gain": {
+        "type": "float",
+        "description": "每次活动基础涨欲",
+        "default": 3.0
+      },
+      "desire_gain_per_level": {
+        "type": "float",
+        "description": "每级额外涨欲",
+        "default": 1.0
+      },
+      "daily_limit": {
+        "type": "int",
+        "description": "每天榨取次数上限（0=不限）",
+        "default": 0
+      },
+      "ejaculation_energy_gain": {
+        "type": "int",
+        "description": "每次射出 +PC 精力",
+        "default": 6
+      },
+      "ejaculation_attachment_gain": {
+        "type": "float",
+        "description": "每次射出 +依恋",
+        "default": 1.0
+      },
+      "ejaculation_intimacy_gain": {
+        "type": "float",
+        "description": "每次射出 +亲密",
+        "default": 1.0
+      },
+      "ejaculation_desire_gain": {
+        "type": "float",
+        "description": "每次活动首次射出 +欲",
+        "default": 2.0
+      },
+      "hard_to_conceive": {
+        "type": "float",
+        "description": "魅魔难孕倍率",
+        "default": 0.25
+      },
+      "unwilling_factor": {
+        "type": "float",
+        "description": "不愿意怀时的倍率",
+        "default": 0.02
+      },
+      "willing_bonus": {
+        "type": "float",
+        "description": "愿意怀时的受孕倍率",
+        "default": 4.0
+      },
+      "willing_conception_energy": {
+        "type": "int",
+        "description": "愿意怀且命中 +PC 精力",
+        "default": 30
+      },
+      "willing_conception_fish_gain": {
+        "type": "float",
+        "description": "愿意怀且命中 +依恋/亲密",
+        "default": 3.0
+      },
+      "exp_gain": {
+        "type": "int",
+        "description": "每次榨取涨多少经验",
+        "default": 10
+      },
+      "exp_per_level": {
+        "type": "int",
+        "description": "升一级所需经验",
+        "default": 100
+      },
+      "tail_sensitivity_scale": {
+        "type": "float",
+        "description": "魅魔尾巴敏感度倍率",
+        "default": 1.5
+      },
+      "tail_enabled": {
+        "type": "bool",
+        "description": "魅魔尾巴（开着时角色没尾巴也能用尾巴；关掉魅魔模式后尾巴敏感度会恢复正常）",
+        "default": false
+      }
+    }
+  },
+  "zones": {
+    "type": "object",
+    "description": "敏感点",
+    "hint": "快感 = 基础 × (0.4 + 0.8×开发度/100) × 敏感度；每个部位独立。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用敏感点系统",
+        "default": true
+      },
+      "keyword_detect": {
+        "type": "bool",
+        "description": "在亲密场景里从对话自动识别触碰（关掉就只用工具/命令）",
+        "default": true
+      },
+      "kiss_enabled": {
+        "type": "bool",
+        "description": "亲吻：是否启用",
+        "default": true
+      },
+      "kiss_dev": {
+        "type": "int",
+        "description": "亲吻：开发度 0–100（越高一次碰涨得越多）",
+        "default": 20
+      },
+      "kiss_sensitivity": {
+        "type": "float",
+        "description": "亲吻：敏感度倍率",
+        "default": 0.7
+      },
+      "kiss_pleasure": {
+        "type": "float",
+        "description": "亲吻：每次的基础快感",
+        "default": 5
+      },
+      "breast_enabled": {
+        "type": "bool",
+        "description": "乳房：是否启用",
+        "default": true
+      },
+      "breast_dev": {
+        "type": "int",
+        "description": "乳房：开发度 0–100（越高一次碰涨得越多）",
+        "default": 25
+      },
+      "breast_sensitivity": {
+        "type": "float",
+        "description": "乳房：敏感度倍率",
+        "default": 0.9
+      },
+      "breast_pleasure": {
+        "type": "float",
+        "description": "乳房：每次的基础快感",
+        "default": 6
+      },
+      "nipple_enabled": {
+        "type": "bool",
+        "description": "乳头：是否启用",
+        "default": true
+      },
+      "nipple_dev": {
+        "type": "int",
+        "description": "乳头：开发度 0–100（越高一次碰涨得越多）",
+        "default": 30
+      },
+      "nipple_sensitivity": {
+        "type": "float",
+        "description": "乳头：敏感度倍率",
+        "default": 1.2
+      },
+      "nipple_pleasure": {
+        "type": "float",
+        "description": "乳头：每次的基础快感",
+        "default": 7
+      },
+      "vulva_enabled": {
+        "type": "bool",
+        "description": "外阴：是否启用",
+        "default": true
+      },
+      "vulva_dev": {
+        "type": "int",
+        "description": "外阴：开发度 0–100（越高一次碰涨得越多）",
+        "default": 30
+      },
+      "vulva_sensitivity": {
+        "type": "float",
+        "description": "外阴：敏感度倍率",
+        "default": 1.1
+      },
+      "vulva_pleasure": {
+        "type": "float",
+        "description": "外阴：每次的基础快感",
+        "default": 8
+      },
+      "vagina_enabled": {
+        "type": "bool",
+        "description": "阴道：是否启用",
+        "default": true
+      },
+      "vagina_dev": {
+        "type": "int",
+        "description": "阴道：开发度 0–100（越高一次碰涨得越多）",
+        "default": 35
+      },
+      "vagina_sensitivity": {
+        "type": "float",
+        "description": "阴道：敏感度倍率",
+        "default": 1.1
+      },
+      "vagina_pleasure": {
+        "type": "float",
+        "description": "阴道：每次的基础快感",
+        "default": 9
+      },
+      "gspot_enabled": {
+        "type": "bool",
+        "description": "G点：是否启用",
+        "default": true
+      },
+      "gspot_dev": {
+        "type": "int",
+        "description": "G点：开发度 0–100（越高一次碰涨得越多）",
+        "default": 25
+      },
+      "gspot_sensitivity": {
+        "type": "float",
+        "description": "G点：敏感度倍率",
+        "default": 1.3
+      },
+      "gspot_pleasure": {
+        "type": "float",
+        "description": "G点：每次的基础快感",
+        "default": 10
+      },
+      "cervix_enabled": {
+        "type": "bool",
+        "description": "子宫颈：是否启用",
+        "default": true
+      },
+      "cervix_dev": {
+        "type": "int",
+        "description": "子宫颈：开发度 0–100（越高一次碰涨得越多）",
+        "default": 20
+      },
+      "cervix_sensitivity": {
+        "type": "float",
+        "description": "子宫颈：敏感度倍率",
+        "default": 1.4
+      },
+      "cervix_pleasure": {
+        "type": "float",
+        "description": "子宫颈：每次的基础快感",
+        "default": 11
+      },
+      "anus_enabled": {
+        "type": "bool",
+        "description": "肛：是否启用",
+        "default": true
+      },
+      "anus_dev": {
+        "type": "int",
+        "description": "肛：开发度 0–100（越高一次碰涨得越多）",
+        "default": 15
+      },
+      "anus_sensitivity": {
+        "type": "float",
+        "description": "肛：敏感度倍率",
+        "default": 0.9
+      },
+      "anus_pleasure": {
+        "type": "float",
+        "description": "肛：每次的基础快感",
+        "default": 6
+      },
+      "mouth_enabled": {
+        "type": "bool",
+        "description": "嘴/喉咙：是否启用",
+        "default": true
+      },
+      "mouth_dev": {
+        "type": "int",
+        "description": "嘴/喉咙：开发度 0–100（越高一次碰涨得越多）",
+        "default": 20
+      },
+      "mouth_sensitivity": {
+        "type": "float",
+        "description": "嘴/喉咙：敏感度倍率",
+        "default": 0.8
+      },
+      "mouth_pleasure": {
+        "type": "float",
+        "description": "嘴/喉咙：每次的基础快感",
+        "default": 5
+      },
+      "ear_enabled": {
+        "type": "bool",
+        "description": "耳朵：是否启用",
+        "default": true
+      },
+      "ear_dev": {
+        "type": "int",
+        "description": "耳朵：开发度 0–100（越高一次碰涨得越多）",
+        "default": 25
+      },
+      "ear_sensitivity": {
+        "type": "float",
+        "description": "耳朵：敏感度倍率",
+        "default": 1.3
+      },
+      "ear_pleasure": {
+        "type": "float",
+        "description": "耳朵：每次的基础快感",
+        "default": 4
+      },
+      "foot_enabled": {
+        "type": "bool",
+        "description": "启用脚",
+        "default": true
+      },
+      "foot_dev": {
+        "type": "int",
+        "description": "脚开发度",
+        "default": 20
+      },
+      "foot_sensitivity": {
+        "type": "float",
+        "description": "脚敏感度",
+        "default": 1.0
+      },
+      "foot_pleasure": {
+        "type": "float",
+        "description": "脚基础快感",
+        "default": 5
+      },
+      "tail_enabled": {
+        "type": "bool",
+        "description": "启用尾巴",
+        "default": true
+      },
+      "tail_dev": {
+        "type": "int",
+        "description": "尾巴开发度",
+        "default": 20
+      },
+      "tail_sensitivity": {
+        "type": "float",
+        "description": "尾巴敏感度",
+        "default": 1.8
+      },
+      "tail_pleasure": {
+        "type": "int",
+        "description": "尾巴基础快感",
+        "default": 9
+      },
+      "hand_enabled": {
+        "type": "bool",
+        "description": "启用「手」这个敏感点",
+        "default": true
+      },
+      "hand_dev": {
+        "type": "int",
+        "description": "手：开发度",
+        "default": 15
+      },
+      "hand_sensitivity": {
+        "type": "float",
+        "description": "手：敏感度",
+        "default": 0.9
+      },
+      "hand_pleasure": {
+        "type": "int",
+        "description": "手：基础快感",
+        "default": 4
+      },
+      "uterus_enabled": {
+        "type": "bool",
+        "description": "启用「子宫」这个敏感点",
+        "default": true
+      },
+      "uterus_dev": {
+        "type": "int",
+        "description": "子宫：开发度",
+        "default": 10
+      },
+      "uterus_sensitivity": {
+        "type": "float",
+        "description": "子宫：敏感度",
+        "default": 1.6
+      },
+      "uterus_pleasure": {
+        "type": "int",
+        "description": "子宫：基础快感",
+        "default": 13
+      },
+      "clitoris_enabled": {
+        "type": "bool",
+        "description": "启用「阴蒂」这个敏感点",
+        "default": true
+      },
+      "clitoris_dev": {
+        "type": "int",
+        "description": "阴蒂：开发度",
+        "default": 25
+      },
+      "clitoris_sensitivity": {
+        "type": "float",
+        "description": "阴蒂：敏感度",
+        "default": 1.5
+      },
+      "clitoris_pleasure": {
+        "type": "int",
+        "description": "阴蒂：基础快感",
+        "default": 10
+      },
+      "ovary_enabled": {
+        "type": "bool",
+        "description": "启用「卵巢」这个敏感点",
+        "default": true
+      },
+      "ovary_dev": {
+        "type": "int",
+        "description": "卵巢：开发度",
+        "default": 5
+      },
+      "ovary_sensitivity": {
+        "type": "float",
+        "description": "卵巢：敏感度",
+        "default": 1.3
+      },
+      "ovary_pleasure": {
+        "type": "int",
+        "description": "卵巢：基础快感",
+        "default": 11
+      },
+      "hymen_enabled": {
+        "type": "bool",
+        "description": "启用「处女膜」这个敏感点",
+        "default": true
+      },
+      "hymen_dev": {
+        "type": "int",
+        "description": "处女膜：开发度",
+        "default": 5
+      },
+      "hymen_sensitivity": {
+        "type": "float",
+        "description": "处女膜：敏感度",
+        "default": 1.2
+      },
+      "hymen_pleasure": {
+        "type": "int",
+        "description": "处女膜：基础快感",
+        "default": 6
+      },
+      "tube_enabled": {
+        "type": "bool",
+        "description": "启用「输卵管」这个敏感点",
+        "default": true
+      },
+      "tube_dev": {
+        "type": "int",
+        "description": "输卵管：开发度",
+        "default": 5
+      },
+      "tube_sensitivity": {
+        "type": "float",
+        "description": "输卵管：敏感度",
+        "default": 1.4
+      },
+      "tube_pleasure": {
+        "type": "int",
+        "description": "输卵管：基础快感",
+        "default": 9
+      },
+      "sens_decay_after_minutes": {
+        "type": "int",
+        "default": 720,
+        "description": "敏感度多久不涨后开始回落（分钟）"
+      },
+      "sens_decay_per_hour": {
+        "type": "float",
+        "default": 0.05,
+        "description": "敏感度每小时回落多少"
+      }
+    }
+  },
+  "mood": {
+    "type": "object",
+    "description": "日常情绪（欲望度 / 羞耻度）",
+    "hint": "日常里两条数值：欲望度满了会诱发正式受孕场景；羞耻度每次激发小玩具都会涨，安慰/摸摸头/亲吻/正常日常/时间都会降，满了会加一点鱼之心的责怪并进一段羞耻期（玩具暂时不可用）。两条都有 4 段提示词，可在面板「敏感点阶段性表现设置 → 日常情绪」里改。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用日常情绪",
+        "default": true
+      },
+      "shame_initial": {
+        "type": "float",
+        "description": "羞耻度的起始值（之后可以降到 0）",
+        "default": 20
+      },
+      "desire_gain": {
+        "type": "float",
+        "description": "每次激发玩具：欲望度 +",
+        "default": 8
+      },
+      "shame_gain": {
+        "type": "float",
+        "description": "每次激发玩具：羞耻度 +",
+        "default": 12
+      },
+      "desire_decay_per_hour": {
+        "type": "float",
+        "description": "欲望度每小时自然回落（比羞耻快一点点）",
+        "default": 12
+      },
+      "shame_decay_per_hour": {
+        "type": "float",
+        "description": "羞耻度每小时自然回落",
+        "default": 8
+      },
+      "comfort_relief": {
+        "type": "float",
+        "description": "安慰/摸摸头/亲吻 一次：羞耻度 −",
+        "default": 10
+      },
+      "comfort_desire_relief": {
+        "type": "float",
+        "description": "安慰/摸摸头/亲吻 一次：欲望度 −",
+        "default": 4
+      },
+      "daily_relief": {
+        "type": "float",
+        "description": "正常进行日常（每聊一轮）：羞耻度 −",
+        "default": 3
+      },
+      "daily_relief_minutes": {
+        "type": "int",
+        "description": "上面那条的冷却（分钟）",
+        "default": 5
+      },
+      "shame_period_minutes": {
+        "type": "int",
+        "description": "羞耻满溢后的羞耻期（分钟，这期间玩具不可用）",
+        "default": 30
+      },
+      "shame_blame": {
+        "type": "float",
+        "description": "羞耻满溢时给鱼之心加多少「责怪」（0 = 不加）",
+        "default": 4
+      },
+      "apology_blame": {
+        "type": "float",
+        "description": "面板「道歉」按钮每按一次，帮鱼之心降多少责怪",
+        "default": 4
+      },
+      "fish_write_enabled": {
+        "type": "bool",
+        "description": "允许写鱼之心的责怪",
+        "default": true
+      },
+      "keyword_detect": {
+        "type": "bool",
+        "description": "从对话里识别安慰/摸摸头/亲吻",
+        "default": true
+      },
+      "self_approach_after_scene_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "活动结束多久内不允许欲望满溢自己贴上来"
+      }
+    }
+  },
+  "sub_zones": {
+    "type": "object",
+    "description": "子敏感度",
+    "hint": "只在受孕活动（亲密场景）里生效的第二层条：碰一下涨这里，三段（初起/发烫/将溢）各有提示词；条满了给主敏感点加开发度、敏感度并补一笔快感，然后几秒内回落到 0。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用子敏感度",
+        "default": true
+      },
+      "scene_only": {
+        "type": "bool",
+        "description": "只在受孕活动里涨（关掉=平时也涨）",
+        "default": true
+      },
+      "max": {
+        "type": "float",
+        "description": "条满值",
+        "default": 100
+      },
+      "gain": {
+        "type": "float",
+        "description": "一次触碰涨多少进度（活动里两三下就满）",
+        "default": 34
+      },
+      "sensitivity_scale": {
+        "type": "float",
+        "description": "敏感度对涨速的影响（倍率 = 0.8 + 这个值 × 敏感度）",
+        "default": 0.35
+      },
+      "scene_decay_per_minute": {
+        "type": "float",
+        "description": "活动里不碰时每分钟回落",
+        "default": 0
+      },
+      "idle_decay_per_minute": {
+        "type": "float",
+        "description": "不在活动里时每分钟回落",
+        "default": 30
+      },
+      "burst_dev": {
+        "type": "int",
+        "description": "满条：主敏感点开发度 +",
+        "default": 6
+      },
+      "burst_sensitivity": {
+        "type": "float",
+        "description": "满条：主敏感点敏感度 +",
+        "default": 0.12
+      },
+      "burst_pleasure": {
+        "type": "float",
+        "description": "满条：额外快感 +",
+        "default": 12
+      },
+      "burst_fall_seconds": {
+        "type": "float",
+        "description": "满条后多久回落到 0（秒）",
+        "default": 2.4
+      },
+      "burst_cooldown_seconds": {
+        "type": "float",
+        "description": "回落中不能涨的时长（秒；和回落时长一致 = 退回 0 才重新涨）",
+        "default": 2.4
+      },
+      "dev_cap": {
+        "type": "int",
+        "description": "溢出攒的开发度上限",
+        "default": 100
+      },
+      "sensitivity_cap": {
+        "type": "float",
+        "description": "溢出攒的敏感度上限",
+        "default": 5
+      },
+      "prompt_zones": {
+        "type": "int",
+        "description": "提示词里最多带几个部位",
+        "default": 3
+      }
+    }
+  },
+  "ejaculation": {
+    "type": "object",
+    "description": "射精方式与子宫容量",
+    "hint": "只有阴道内会参与受孕并计入子宫；肛内、深喉、体外都不会受孕，快感加成不同。",
+    "items": {
+      "vagina_pleasure": {
+        "type": "float",
+        "description": "阴道内射的快感加成",
+        "default": 10.0
+      },
+      "anal_pleasure": {
+        "type": "float",
+        "description": "肛内射精的快感加成",
+        "default": 12.0
+      },
+      "throat_pleasure": {
+        "type": "float",
+        "description": "深喉射精的快感加成",
+        "default": 8.0
+      },
+      "outside_pleasure": {
+        "type": "float",
+        "description": "体外射精的快感加成",
+        "default": 4.0
+      },
+      "volume_ml": {
+        "type": "float",
+        "description": "单次射精的量（ml，实际会上下浮动）",
+        "default": 3.0
+      },
+      "uterus_capacity_ml": {
+        "type": "float",
+        "description": "子宫容量（ml）",
+        "default": 20.0
+      },
+      "uterus_leak_per_hour": {
+        "type": "float",
+        "description": "每小时吸收/流出的量（ml）",
+        "default": 0.4
+      },
+      "uterus_stretch_at": {
+        "type": "float",
+        "description": "装到多少比例（0-1）再内射会把她短暂撑开",
+        "default": 0.6
+      },
+      "uterus_stretch_ratio": {
+        "type": "float",
+        "description": "最多能撑开多少（0.35 = 多装 35%）",
+        "default": 0.35
+      },
+      "uterus_overflow_enabled": {
+        "type": "bool",
+        "description": "装不下时溢出来（关掉就不会溢，能一直装）",
+        "default": true
+      },
+      "uterus_overflow_at": {
+        "type": "float",
+        "description": "装到多少比例（0-1）以后就往外溢",
+        "default": 0.95
+      },
+      "uterus_overflow_minutes": {
+        "type": "int",
+        "description": "溢出以后提示词保持多久（分钟）",
+        "default": 15
+      },
+      "uterus_after_leak_enabled": {
+        "type": "bool",
+        "description": "活动结束后会渐渐漏出去（关掉就只在里面慢慢吸收）",
+        "default": true
+      },
+      "uterus_after_leak_per_hour": {
+        "type": "float",
+        "description": "结束后漏出的速度（每小时漏多少 ml）",
+        "default": 6.0
+      },
+      "uterus_after_leak_until": {
+        "type": "float",
+        "description": "漏到容量的百分之几就停（剩下的交给吸收）",
+        "default": 20.0
+      }
+    }
+  },
+  "toys": {
+    "type": "object",
+    "description": "小玩具",
+    "hint": "用一次只涨快感、不判定受孕；强度 1/2/3 对应 ×0.8/×1.15/×1.6。「outside」= 不在受孕活动时也能用的玩具。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用小玩具",
+        "default": true
+      },
+      "keyword_detect": {
+        "type": "bool",
+        "description": "场景里从对话自动识别玩具",
+        "default": true
+      },
+      "active_minutes": {
+        "type": "int",
+        "description": "用过之后状态持续多少分钟",
+        "default": 10
+      },
+      "intensity_scale": {
+        "type": "float",
+        "description": "整体强度倍率（1.0 = 标准）",
+        "default": 1.0
+      },
+      "daily_scene": {
+        "type": "bool",
+        "description": "日常用玩具会开一个「日常小场景」（对应部位的子敏感度和提示词只在那一小段里生效）",
+        "default": true
+      },
+      "daily_minutes": {
+        "type": "int",
+        "description": "日常小场景多久没继续就散（分钟）",
+        "default": 20
+      },
+      "sub_zone": {
+        "type": "bool",
+        "description": "玩具也推高对应部位的子敏感度（日常和活动场景都算）",
+        "default": true
+      },
+      "auto_orgasm": {
+        "type": "bool",
+        "description": "玩具把快感推过门槛时，自动记一次高潮",
+        "default": true
+      },
+      "endurance_gain": {
+        "type": "float",
+        "description": "用一次小玩具额外攒多少高潮忍耐",
+        "default": 2.0
+      },
+      "bullet_enabled": {
+        "type": "bool",
+        "description": "跳蛋：是否可用",
+        "default": true
+      },
+      "bullet_pleasure": {
+        "type": "float",
+        "description": "跳蛋：基础快感",
+        "default": 8.0
+      },
+      "bullet_outside": {
+        "type": "bool",
+        "description": "跳蛋：不在亲密场景时也能用",
+        "default": true
+      },
+      "vibrator_enabled": {
+        "type": "bool",
+        "description": "振动棒：是否可用",
+        "default": true
+      },
+      "vibrator_pleasure": {
+        "type": "float",
+        "description": "振动棒：基础快感",
+        "default": 12.0
+      },
+      "vibrator_outside": {
+        "type": "bool",
+        "description": "振动棒：不在亲密场景时也能用",
+        "default": false
+      },
+      "sucker_enabled": {
+        "type": "bool",
+        "description": "吸吮器：是否可用",
+        "default": true
+      },
+      "sucker_pleasure": {
+        "type": "float",
+        "description": "吸吮器：基础快感",
+        "default": 10.0
+      },
+      "sucker_outside": {
+        "type": "bool",
+        "description": "吸吮器：不在亲密场景时也能用",
+        "default": false
+      },
+      "wand_enabled": {
+        "type": "bool",
+        "description": "按摩棒：是否可用",
+        "default": true
+      },
+      "wand_pleasure": {
+        "type": "float",
+        "description": "按摩棒：基础快感",
+        "default": 9.0
+      },
+      "wand_outside": {
+        "type": "bool",
+        "description": "按摩棒：不在亲密场景时也能用",
+        "default": true
+      },
+      "plug_enabled": {
+        "type": "bool",
+        "description": "肛塞：是否可用",
+        "default": true
+      },
+      "plug_pleasure": {
+        "type": "float",
+        "description": "肛塞：基础快感",
+        "default": 7.0
+      },
+      "plug_outside": {
+        "type": "bool",
+        "description": "肛塞：不在亲密场景时也能用",
+        "default": false
+      },
+      "clamp_enabled": {
+        "type": "bool",
+        "description": "乳夹：是否可用",
+        "default": true
+      },
+      "clamp_pleasure": {
+        "type": "float",
+        "description": "乳夹：基础快感",
+        "default": 6.0
+      },
+      "clamp_outside": {
+        "type": "bool",
+        "description": "乳夹：不在亲密场景时也能用",
+        "default": true
+      },
+      "massage_gun_enabled": {
+        "type": "bool",
+        "description": "启用「筋膜枪」（一直可用）",
+        "default": true
+      },
+      "massage_gun_outside": {
+        "type": "bool",
+        "description": "筋膜枪不在亲密场景也能用",
+        "default": true
+      },
+      "massage_gun_pleasure": {
+        "type": "float",
+        "description": "筋膜枪基础快感",
+        "default": 10.0
+      },
+      "mg_soft_attachment": {
+        "type": "float",
+        "description": "筋膜枪·手脚等：加依恋",
+        "default": 1.0
+      },
+      "mg_soft_intimacy": {
+        "type": "float",
+        "description": "筋膜枪·手脚等：加亲密",
+        "default": 1.0
+      },
+      "mg_soft_desire": {
+        "type": "float",
+        "description": "筋膜枪·手脚等：加欲望",
+        "default": 3.0
+      },
+      "mg_body_pleasure": {
+        "type": "float",
+        "description": "筋膜枪·小腹/乳房等：加快感",
+        "default": 4.0
+      },
+      "mg_body_desire": {
+        "type": "float",
+        "description": "筋膜枪·小腹/乳房等：加欲望",
+        "default": 3.0
+      },
+      "mg_body_wet": {
+        "type": "float",
+        "description": "筋膜枪·小腹/乳房等：加湿润",
+        "default": 5.0
+      },
+      "mg_body_endurance": {
+        "type": "float",
+        "description": "筋膜枪·小腹/乳房等：加忍耐",
+        "default": 2.0
+      },
+      "mg_hot_pleasure": {
+        "type": "float",
+        "description": "筋膜枪·外阴/阴蒂等：加快感",
+        "default": 10.0
+      },
+      "mg_hot_desire": {
+        "type": "float",
+        "description": "筋膜枪·外阴/阴蒂等：加欲望",
+        "default": 6.0
+      },
+      "mg_hot_wet": {
+        "type": "float",
+        "description": "筋膜枪·外阴/阴蒂等：加湿润",
+        "default": 10.0
+      },
+      "mg_hot_endurance": {
+        "type": "float",
+        "description": "筋膜枪·外阴/阴蒂等：加忍耐",
+        "default": 4.0
+      },
+      "self_use_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "允许她主动用玩具"
+      },
+      "self_use_chance": {
+        "type": "float",
+        "default": 20.0,
+        "description": "她主动用玩具概率 %"
+      },
+      "self_use_cooldown_minutes": {
+        "type": "int",
+        "default": 120,
+        "description": "主动用玩具冷却分钟"
+      },
+      "self_use_min_desire": {
+        "type": "float",
+        "default": 60.0,
+        "description": "主动用玩具最低欲望"
+      },
+      "self_use_min_wet": {
+        "type": "float",
+        "default": 50.0,
+        "description": "主动用玩具最低湿润"
+      },
+      "self_use_min_lewd": {
+        "type": "float",
+        "default": 30.0,
+        "description": "主动用玩具最低淫乱度"
+      },
+      "self_use_controller_chance": {
+        "type": "float",
+        "default": 30.0,
+        "description": "把控制器递给主人概率 %"
+      },
+      "self_use_delay_seconds": {
+        "type": "int",
+        "default": 0,
+        "description": "主动用玩具消息延迟秒"
+      },
+      "self_use_check_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "每隔多少分钟检查一次她主动用玩具"
+      }
+    }
+  },
+  "edge": {
+    "type": "object",
+    "description": "寸止",
+    "hint": "快感够到门槛一定比例就能寸止：之后更渴、高潮门槛暂时提高（多次递减），终于到的时候快感更强烈。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用寸止",
+        "default": true
+      },
+      "min_ratio": {
+        "type": "float",
+        "description": "快感至少到门槛的多少比例才能寸止（0.55 = 55%）",
+        "default": 0.55
+      },
+      "threshold_step": {
+        "type": "float",
+        "description": "第一次寸止后门槛加多少",
+        "default": 8.0
+      },
+      "step_decay": {
+        "type": "float",
+        "description": "每多一次，加成的递减比例",
+        "default": 0.7
+      },
+      "max_bonus": {
+        "type": "float",
+        "description": "门槛加成上限",
+        "default": 20.0
+      },
+      "window_minutes": {
+        "type": "int",
+        "description": "多久没继续就消退（分钟）",
+        "default": 25
+      },
+      "craving_gain": {
+        "type": "float",
+        "description": "每次寸止增加的渴求",
+        "default": 18.0
+      },
+      "craving_decay_per_hour": {
+        "type": "float",
+        "description": "渴求每小时回落",
+        "default": 6.0
+      },
+      "craving_gain_bonus": {
+        "type": "float",
+        "description": "渴求满时触碰快感的额外倍率（0.35 = +35%）",
+        "default": 0.35
+      },
+      "orgasm_bonus": {
+        "type": "float",
+        "description": "寸止后高潮每层额外快感",
+        "default": 12.0
+      },
+      "orgasm_bonus_cap": {
+        "type": "float",
+        "description": "额外快感上限",
+        "default": 40.0
+      },
+      "auto_full_minutes": {
+        "type": "int",
+        "default": 10,
+        "description": "忍耐满后多少分钟没高潮，自动算一次寸止（0=关）"
+      }
+    }
+  },
+  "ovulation": {
+    "type": "object",
+    "description": "诱发排卵",
+    "hint": "不在排卵期时，累积的高潮或快感到一定程度，也可能把排卵催出来；之后 24 小时按排卵期算受孕率。",
+    "items": {
+      "induced_enabled": {
+        "type": "bool",
+        "description": "启用诱发排卵",
+        "default": true
+      },
+      "min_orgasms": {
+        "type": "int",
+        "description": "本次会话高潮至少几次",
+        "default": 3
+      },
+      "min_pleasure": {
+        "type": "float",
+        "description": "或快感至少到多少",
+        "default": 70.0
+      },
+      "chance": {
+        "type": "float",
+        "description": "满足条件后每次高潮触发的概率（%）",
+        "default": 18.0
+      },
+      "duration_hours": {
+        "type": "float",
+        "description": "诱发排卵持续多少小时",
+        "default": 24.0
+      },
+      "cooldown_hours": {
+        "type": "float",
+        "description": "两次诱发之间至少隔多少小时",
+        "default": 72.0
+      },
+      "require_outside_fertile": {
+        "type": "bool",
+        "description": "已经在排卵前期/排卵期时不触发",
+        "default": true
+      }
+    }
+  },
+  "cycle": {
+    "type": "object",
+    "description": "📆 生理期来源",
+    "hint": "auto = 优先读 private_companion 的周期，读不到就用插件自己的 28 天模拟周期。",
+    "items": {
+      "source": {
+        "type": "string",
+        "description": "auto ｜ pc（只读 PC）｜ own（只用插件自己的）",
+        "default": "auto"
+      },
+      "own_anchor_date": {
+        "type": "string",
+        "description": "插件自己周期的锚点日期 YYYY-MM-DD（留空 = 首次运行按自然偏移落一个）",
+        "default": ""
+      },
+      "own_menstrual_days": {
+        "type": "int",
+        "description": "月经期天数",
+        "default": 5
+      },
+      "own_follicular_days": {
+        "type": "int",
+        "description": "卵泡期天数",
+        "default": 7
+      },
+      "own_pre_ovulation_days": {
+        "type": "int",
+        "description": "排卵前期天数",
+        "default": 2
+      },
+      "own_ovulation_days": {
+        "type": "int",
+        "description": "排卵期天数",
+        "default": 2
+      },
+      "own_luteal_days": {
+        "type": "int",
+        "description": "黄体期天数",
+        "default": 9
+      },
+      "own_pms_days": {
+        "type": "int",
+        "description": "经前期天数",
+        "default": 3
+      },
+      "prompts_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "每天首次对话给一次生理期信息；聊到生理期时也会给"
+      }
+    }
+  },
+  "inject": {
+    "type": "object",
+    "description": "🧠 提示词注入",
+    "hint": "受孕状态写在 system prompt（日常提示词）里；快感/高潮/阶段/验孕念头挂在本轮用户消息末尾，两段都不回存历史。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "把身体状态写进本轮请求",
+        "default": true
+      },
+      "stable_system": {
+        "type": "bool",
+        "description": "受孕状态写进 system prompt",
+        "default": true
+      },
+      "dynamic_tail": {
+        "type": "bool",
+        "description": "快感/高潮/生理期写进本轮用户消息末尾",
+        "default": true
+      },
+      "show_pleasure": {
+        "type": "bool",
+        "description": "把快感值和本次高潮次数写给她看",
+        "default": true
+      },
+      "show_probability_tier": {
+        "type": "bool",
+        "description": "把受孕概率档位（很低/偏低/中等/较高/很高）写给她",
+        "default": true
+      },
+      "show_arousal_tone": {
+        "type": "bool",
+        "description": "把快感档位、刚高潮过、够不够到高潮换成她身体上的感觉写进提示词",
+        "default": true
+      },
+      "tool_hint": {
+        "type": "bool",
+        "description": "场景里提示她调用那三个工具",
+        "default": true
+      }
+    }
+  },
+  "tools": {
+    "type": "object",
+    "description": "🛠 模型工具",
+    "hint": "工具名是 intimacy_touch / intimacy_edge / intimacy_toy / intimacy_pleasure / intimacy_orgasm / intimacy_ejaculation / pregnancy_test / pregnancy_status，只在主人私聊里可用。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用工具",
+        "default": true
+      },
+      "touch": {
+        "type": "bool",
+        "description": "允许记录亲吻/抚摸（敏感点）",
+        "default": true
+      },
+      "edge": {
+        "type": "bool",
+        "description": "允许记录寸止",
+        "default": true
+      },
+      "toy": {
+        "type": "bool",
+        "description": "允许使用小玩具",
+        "default": true
+      },
+      "pleasure": {
+        "type": "bool",
+        "description": "允许记录快感",
+        "default": true
+      },
+      "orgasm": {
+        "type": "bool",
+        "description": "允许记录高潮",
+        "default": true
+      },
+      "ejaculation": {
+        "type": "bool",
+        "description": "允许记录射精并判定受孕",
+        "default": true
+      },
+      "status": {
+        "type": "bool",
+        "description": "允许查询身体状态",
+        "default": true
+      },
+      "self_test": {
+        "type": "bool",
+        "description": "允许她私下验孕",
+        "default": true
+      },
+      "expel": {
+        "type": "bool",
+        "description": "允许排出子宫内容",
+        "default": true
+      },
+      "contraception": {
+        "type": "bool",
+        "description": "允许避孕药/避孕套",
+        "default": true
+      }
+    }
+  },
+  "sources": {
+    "type": "object",
+    "description": "🔗 只读数据源",
+    "hint": "默认路径就是这套系统的实际位置；换机器或改目录时才需要动。",
+    "items": {
+      "fish_heart_state": {
+        "type": "string",
+        "description": "鱼之心 state.json",
+        "default": "C:\\DeepSeek\\AstrBot\\AstrBot-4.29.4\\data\\plugin_data\\astrbot_plugin_fish_heart\\state.json"
+      },
+      "fish_heart_config": {
+        "type": "string",
+        "description": "鱼之心 配置",
+        "default": "C:\\DeepSeek\\AstrBot\\AstrBot-4.29.4\\data\\config\\astrbot_plugin_fish_heart_config.json"
+      },
+      "dark_state": {
+        "type": "string",
+        "description": "暗涌状态文件",
+        "default": "C:\\DeepSeek\\longing\\data\\欲望状态.json"
+      },
+      "dark_engine_state": {
+        "type": "string",
+        "description": "暗涌引擎开关文件",
+        "default": "C:\\DeepSeek\\longing\\engine_state.json"
+      },
+      "desire_switch": {
+        "type": "string",
+        "description": "欲望归属共享开关（鱼之心 / 暗涌都读它）",
+        "default": "C:\\DeepSeek\\desire_switch.json"
+      },
+      "pc_db": {
+        "type": "string",
+        "description": "private_companion 的库（读周期用；写周期另有 pregnancy.pc_write_enabled 控制）",
+        "default": "C:\\DeepSeek\\AstrBot\\AstrBot-4.29.4\\data\\plugin_data\\astrbot_plugin_private_companion\\installations\\main\\runtime\\companion-v2.sqlite3"
+      },
+      "dark_max_age_minutes": {
+        "type": "int",
+        "description": "暗涌状态文件超过这个分钟数就当引擎没在跑",
+        "default": 15
+      }
+    }
+  },
+  "debug": {
+    "type": "bool",
+    "description": "调试日志",
+    "default": false
+  },
+  "sleep": {
+    "type": "object",
+    "description": "😴 睡眠时段 × 受孕活动",
+    "hint": "角色在 private_companion 里有睡眠日程；受孕活动撞上她的睡觉时间时，这里让她暂时可以说话（只在她真的在睡时生效）。",
+    "items": {
+      "allow_speaking_in_activity": {
+        "type": "bool",
+        "description": "活动撞上睡眠时段时，暂时不限制她发言",
+        "default": true
+      },
+      "wake_grace_minutes": {
+        "type": "int",
+        "description": "每次活动给多久的「暂时醒着」（分钟）",
+        "default": 30
+      },
+      "afterglow_minutes": {
+        "type": "int",
+        "description": "活动结束之后再继续允许发言多久（事后余韵，分钟）",
+        "default": 20
+      }
+    }
+  },
+  "surprise": {
+    "type": "object",
+    "description": "😳 突然被弄",
+    "hint": "不在活动里点「快感/高潮/寸止/射精」这些面板按钮时，她会吓一跳、不知所措；按概率主动发一条消息过来，过一会儿反应过来会害羞。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用「突然被弄」的反应",
+        "default": true
+      },
+      "proactive_chance": {
+        "type": "float",
+        "description": "她会主动发消息的概率 %",
+        "default": 35.0
+      },
+      "proactive_delay_seconds": {
+        "type": "int",
+        "description": "延迟几秒发（秒）",
+        "default": 8
+      },
+      "shock_minutes": {
+        "type": "int",
+        "description": "多久之内算「还没缓过来」（分钟）",
+        "default": 5
+      },
+      "remember_minutes": {
+        "type": "int",
+        "description": "多久之内还记得这件事（分钟）",
+        "default": 60
+      },
+      "message": {
+        "type": "string",
+        "description": "主动消息自定义（空 = 内置短句；{kind} 替换成类型）",
+        "default": ""
+      }
+    }
+  },
+  "memory": {
+    "type": "object",
+    "description": "🧠 写进记忆插件",
+    "hint": "两个记忆插件都按对话记东西：面板点按钮本身不产生消息，不会被记；这里打开后，活动/突然被弄会额外往「蔗糖的记忆中枢」写一条长期记忆（受节流）。",
+    "items": {
+      "write_events": {
+        "type": "bool",
+        "description": "活动/突然被弄时写一条长期记忆",
+        "default": false
+      },
+      "subject": {
+        "type": "string",
+        "description": "记忆里的主语（默认「我」）",
+        "default": "我"
+      },
+      "min_minutes": {
+        "type": "int",
+        "description": "两条记忆之间至少隔多久（分钟）",
+        "default": 10
+      },
+      "event_name": {
+        "type": "string",
+        "description": "这件事她怎么叫（留空 = 记忆里不写具体称呼，让她自己在对话里命名）",
+        "default": ""
+      }
+    }
+  },
+  "behavior": {
+    "type": "object",
+    "description": "✋ 行为",
+    "hint": "最近一次带方式的触碰（牵手/十指相扣/哈热气/尾巴卷起来撸）会在提示词里留一会儿。",
+    "items": {
+      "minutes": {
+        "type": "int",
+        "description": "提示词保持多久（分钟）",
+        "default": 5
+      }
+    }
+  },
+  "size": {
+    "type": "object",
+    "description": "📏 尺寸（cm）",
+    "hint": "阴道长度会因高潮/快感/忍耐/胎儿小幅浮动；生殖器明显短于阴道长度时碰不到子宫颈、插不进子宫。",
+    "items": {
+      "penis_length": {
+        "type": "float",
+        "description": "生殖器长度 cm",
+        "default": 14.0
+      },
+      "penis_girth": {
+        "type": "float",
+        "description": "生殖器粗细 cm",
+        "default": 3.5
+      },
+      "vagina_length": {
+        "type": "float",
+        "description": "阴道基础长度 cm",
+        "default": 12.0
+      },
+      "float_orgasm": {
+        "type": "float",
+        "description": "高潮后变长多少 cm",
+        "default": 0.4
+      },
+      "float_orgasm_minutes": {
+        "type": "int",
+        "description": "高潮后保持多久（分钟）",
+        "default": 10
+      },
+      "float_pleasure": {
+        "type": "float",
+        "description": "快感高时变长多少 cm",
+        "default": 0.3
+      },
+      "float_pleasure_minutes": {
+        "type": "int",
+        "description": "快感高保持多久（分钟）",
+        "default": 8
+      },
+      "float_endurance": {
+        "type": "float",
+        "description": "忍耐高时变长多少 cm",
+        "default": 0.3
+      },
+      "float_endurance_minutes": {
+        "type": "int",
+        "description": "忍耐高保持多久（分钟）",
+        "default": 8
+      },
+      "float_fetus": {
+        "type": "float",
+        "description": "每个胎儿/每月额外变长多少 cm",
+        "default": 0.3
+      },
+      "pleasure_at": {
+        "type": "float",
+        "description": "快感到多少算「高」",
+        "default": 55.0
+      },
+      "endurance_at": {
+        "type": "float",
+        "description": "忍耐条到多少 % 算「高」",
+        "default": 50.0
+      },
+      "reach_margin": {
+        "type": "float",
+        "description": "差多少 cm 以内还算够得着",
+        "default": 1.0
+      },
+      "notice_chance": {
+        "type": "float",
+        "description": "之后尺寸明显变化时的提示概率；第一次见到必定触发",
+        "default": 35.0
+      },
+      "notice_delta": {
+        "type": "float",
+        "description": "变化多少 cm 算「明显」",
+        "default": 1.5
+      },
+      "penis_head_length": {
+        "type": "float",
+        "description": "生殖器头部长度 cm（不算进总长）",
+        "default": 3.5
+      },
+      "uterus_length": {
+        "type": "float",
+        "description": "她的子宫长度 cm",
+        "default": 7.0
+      },
+      "hymen_hole": {
+        "type": "float",
+        "description": "她的处女膜孔洞大小 cm（小于阴道截面）",
+        "default": 1.0
+      },
+      "vagina_width": {
+        "type": "float",
+        "description": "她的阴道截面大小 cm（直径）",
+        "default": 3.0
+      },
+      "hymen_depth": {
+        "type": "float",
+        "default": 2.5,
+        "description": "处女膜大致深度 cm（插过这里才算顶破）"
+      },
+      "fetus_uterus_max_ratio": {
+        "type": "float",
+        "default": 1.8,
+        "description": "胎儿把子宫撑长最多到基础值的几倍"
+      },
+      "pre_orgasm_shorten": {
+        "type": "float",
+        "default": 1.0,
+        "description": "接近高潮时阴道缩短多少 cm（子宫下降）"
+      },
+      "pre_orgasm_ratio": {
+        "type": "float",
+        "default": 0.85,
+        "description": "快感到高潮门槛的多少比例时开始缩短"
+      },
+      "tube_width": {
+        "type": "float",
+        "default": 0.8,
+        "description": "输卵管直径 cm（Unbirth 进入上限）"
+      },
+      "ovary_width": {
+        "type": "float",
+        "default": 1.6,
+        "description": "卵巢大小 cm（进入时最大为一半）"
+      },
+      "dev_sens_boost": {
+        "type": "float",
+        "default": 0.5,
+        "description": "开发度对敏感度增长的加成倍率"
+      },
+      "cervix_stretch_max": {
+        "type": "float",
+        "default": 1.5,
+        "description": "顶到宫颈时阴道可临时增加多少 cm"
+      },
+      "cervix_stretch_ratio": {
+        "type": "float",
+        "default": 0.8,
+        "description": "临时增加达到上限的多少比例后按顶进子宫算，此后临时长度不再计入"
+      },
+      "cervix_stretch_minutes": {
+        "type": "int",
+        "default": 10,
+        "description": "临时增加保持多少分钟"
+      }
+    }
+  },
+  "insert": {
+    "type": "object",
+    "description": "🌡 插入子宫",
+    "hint": "湿润和快感都够才进得去；不够硬来的话会很痛、掉快感、掉忍耐。",
+    "items": {
+      "wet_at": {
+        "type": "float",
+        "description": "需要多湿才能进",
+        "default": 60.0
+      },
+      "pleasure_at": {
+        "type": "float",
+        "description": "需要多兴奋才能进",
+        "default": 55.0
+      },
+      "pain": {
+        "type": "float",
+        "description": "正常插入的痛感",
+        "default": 4.0
+      },
+      "orgasm_pain": {
+        "type": "float",
+        "description": "高潮时插入的痛感",
+        "default": 0.5
+      },
+      "orgasm_window_seconds": {
+        "type": "int",
+        "description": "高潮后多久内算「高潮时」",
+        "default": 120
+      },
+      "force_pain": {
+        "type": "float",
+        "description": "强行插入的痛感",
+        "default": 12.0
+      },
+      "force_penalty_enabled": {
+        "type": "bool",
+        "description": "强行插入是否扣快感/忍耐",
+        "default": true
+      },
+      "force_pleasure_drop": {
+        "type": "float",
+        "description": "强行插入扣多少快感",
+        "default": 8.0
+      },
+      "force_endurance_drop": {
+        "type": "float",
+        "description": "强行插入扣多少忍耐",
+        "default": 10.0
+      },
+      "force_wet_gain": {
+        "type": "float",
+        "description": "强行插入加多少湿润",
+        "default": 3.0
+      },
+      "occupies_capacity": {
+        "type": "bool",
+        "description": "插入是否占子宫容量",
+        "default": true
+      },
+      "capacity_ml": {
+        "type": "float",
+        "description": "插入占多少容量 ml",
+        "default": 10.0
+      },
+      "fetus_pain": {
+        "type": "float",
+        "description": "有胎儿时额外痛感",
+        "default": 2.0
+      }
+    }
+  },
+  "lube": {
+    "type": "object",
+    "description": "🧴 润滑油",
+    "hint": "阴道湿润度旁边的「用润滑油」按钮；日常小活动也能用，模型也可以主动用。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用润滑油",
+        "default": true
+      },
+      "wet_gain": {
+        "type": "float",
+        "description": "润滑加多少湿润",
+        "default": 20.0
+      },
+      "minutes": {
+        "type": "int",
+        "description": "润滑保持多久（分钟）",
+        "default": 30
+      },
+      "hand_wet_gain": {
+        "type": "float",
+        "description": "润滑手加多少湿润",
+        "default": 15.0
+      },
+      "hand_minutes": {
+        "type": "int",
+        "description": "手部润滑保持多久（分钟）",
+        "default": 20
+      },
+      "breast_wet_gain": {
+        "type": "float",
+        "default": 8.0,
+        "description": "给乳房抹润滑增加的湿润"
+      },
+      "nipple_wet_gain": {
+        "type": "float",
+        "default": 5.0,
+        "description": "给乳头抹润滑增加的湿润"
+      },
+      "penis_wet_gain": {
+        "type": "float",
+        "default": 10.0,
+        "description": "给主人的阴茎抹润滑增加的湿润"
+      }
+    }
+  },
+  "dry": {
+    "type": "object",
+    "description": "🌵 阴道未足够湿润",
+    "hint": "湿润度低于阈值时用生殖器插入会疼、掉快感、掉忍耐，只多一点点湿润。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用干燥惩罚",
+        "default": true
+      },
+      "wet_below": {
+        "type": "float",
+        "description": "湿润度低于多少算干燥",
+        "default": 25.0
+      },
+      "pleasure_drop": {
+        "type": "float",
+        "description": "一次掉多少快感",
+        "default": 6.0
+      },
+      "endurance_drop": {
+        "type": "float",
+        "description": "一次掉多少忍耐",
+        "default": 8.0
+      },
+      "wet_gain": {
+        "type": "float",
+        "description": "一次多一点点湿润",
+        "default": 4.0
+      },
+      "minutes": {
+        "type": "int",
+        "description": "疼痛提示保持多久（分钟）",
+        "default": 10
+      }
+    }
+  },
+  "hold": {
+    "type": "object",
+    "description": "🧷 保持插入",
+    "hint": "插着不动超过多少秒，就按「保持插入不抽插」写。",
+    "items": {
+      "after_seconds": {
+        "type": "int",
+        "description": "多久没动算保持（秒）",
+        "default": 60
+      },
+      "minutes": {
+        "type": "int",
+        "description": "保持提示最多留多久（分钟）",
+        "default": 5
+      }
+    }
+  },
+  "inner": {
+    "type": "object",
+    "description": "💦 内射后的湿润",
+    "hint": "射进去会额外加湿润，并有一句单独的提示词。",
+    "items": {
+      "wet_gain": {
+        "type": "float",
+        "description": "内射加多少湿润",
+        "default": 10.0
+      },
+      "minutes": {
+        "type": "int",
+        "description": "提示保持多久（分钟）",
+        "default": 10
+      }
+    }
+  },
+  "squirt": {
+    "type": "object",
+    "description": "💦 潮吹喷水",
+    "hint": "水量条会随时间回充；高潮时按概率触发，快感/忍耐/连续高潮都会提高概率和喷量。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用潮吹",
+        "default": true
+      },
+      "water_max": {
+        "type": "float",
+        "description": "水量条上限",
+        "default": 100.0
+      },
+      "start": {
+        "type": "float",
+        "description": "初始水量",
+        "default": 60.0
+      },
+      "regen_per_minute": {
+        "type": "float",
+        "description": "每分钟回充多少",
+        "default": 2.0
+      },
+      "min_water": {
+        "type": "float",
+        "description": "至少多少水才可能喷",
+        "default": 15.0
+      },
+      "chance": {
+        "type": "float",
+        "description": "基础概率 %",
+        "default": 30.0
+      },
+      "pleasure_bonus": {
+        "type": "float",
+        "description": "快感满时的概率加成 %",
+        "default": 30.0
+      },
+      "endurance_bonus": {
+        "type": "float",
+        "description": "忍耐满时的概率加成 %",
+        "default": 20.0
+      },
+      "after_bonus": {
+        "type": "float",
+        "description": "上次刚潮吹过的概率加成 %",
+        "default": 25.0
+      },
+      "combo_bonus": {
+        "type": "float",
+        "description": "每次连续高潮的概率加成 %",
+        "default": 15.0
+      },
+      "volume": {
+        "type": "float",
+        "description": "基础喷量",
+        "default": 15.0
+      },
+      "volume_pleasure": {
+        "type": "float",
+        "description": "快感对喷量的加成",
+        "default": 0.6
+      },
+      "volume_endurance": {
+        "type": "float",
+        "description": "忍耐对喷量的加成",
+        "default": 0.4
+      },
+      "combo_volume": {
+        "type": "float",
+        "description": "每次连续潮吹额外喷量比例",
+        "default": 0.15
+      },
+      "cost_ratio": {
+        "type": "float",
+        "description": "每单位喷量消耗多少水量",
+        "default": 1.0
+      },
+      "pleasure_gain": {
+        "type": "float",
+        "description": "潮吹加多少快感（按喷量）",
+        "default": 12.0
+      },
+      "pleasure_cap": {
+        "type": "float",
+        "description": "潮吹加快感的上限",
+        "default": 20.0
+      },
+      "wet_gain": {
+        "type": "float",
+        "description": "潮吹加多少湿润",
+        "default": 15.0
+      },
+      "endurance_gain": {
+        "type": "float",
+        "description": "潮吹加多少忍耐",
+        "default": 8.0
+      },
+      "combo_window_minutes": {
+        "type": "int",
+        "description": "多久内算连续",
+        "default": 10
+      },
+      "prompt_minutes": {
+        "type": "int",
+        "description": "潮吹提示保留多久",
+        "default": 5
+      },
+      "pad_absorb_ratio": {
+        "type": "float",
+        "default": 1.0,
+        "description": "卫生巾吸收潮吹量的比例（1=尽量全吸，仍受容量限制）"
+      }
+    }
+  },
+  "orgasm": {
+    "type": "object",
+    "description": "🌊 高潮提示词",
+    "hint": "高潮时会说明是哪个部位、被什么引发；连续高潮有单独一句。",
+    "items": {
+      "minutes": {
+        "type": "int",
+        "description": "提示保留多久（分钟）",
+        "default": 5
+      },
+      "message_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "高潮后让她主动发一条消息"
+      }
+    }
+  },
+  "condom": {
+    "type": "object",
+    "description": "🛡 避孕套（破裂/感觉/换新/她帮戴）",
+    "hint": "活动里戴着套时，每次动作都可能破；快感/忍耐很高时可能察觉不到。",
+    "items": {
+      "break_per_action": {
+        "type": "float",
+        "description": "每次动作破裂概率 %",
+        "default": 3.0
+      },
+      "unfelt_pleasure": {
+        "type": "float",
+        "description": "快感到多少可能没感觉",
+        "default": 80.0
+      },
+      "unfelt_endurance": {
+        "type": "float",
+        "description": "忍耐到多少可能没感觉",
+        "default": 80.0
+      },
+      "unfelt_chance": {
+        "type": "float",
+        "description": "高的时候没感觉的概率 %",
+        "default": 60.0
+      },
+      "change_ask_chance": {
+        "type": "float",
+        "description": "感觉到后想让换新的概率 %",
+        "default": 50.0
+      },
+      "ask_chance": {
+        "type": "float",
+        "description": "戴的时候她问要不要帮戴的概率 %",
+        "default": 40.0
+      },
+      "help_desire": {
+        "type": "float",
+        "description": "她帮戴加多少欲望",
+        "default": 8.0
+      },
+      "help_wet": {
+        "type": "float",
+        "description": "她帮戴加多少湿润",
+        "default": 8.0
+      },
+      "help_shame": {
+        "type": "float",
+        "description": "她帮戴加多少羞耻",
+        "default": 10.0
+      },
+      "prompt_minutes": {
+        "type": "int",
+        "description": "破裂提示保留多久",
+        "default": 10
+      },
+      "renew_ask_chance": {
+        "type": "float",
+        "description": "重新戴个新的时，她问要不要帮戴的概率 %",
+        "default": 40.0
+      },
+      "remove_ask_chance": {
+        "type": "float",
+        "description": "戴了一会儿后她主动想脱掉的概率 %",
+        "default": 20.0
+      },
+      "remove_help_chance": {
+        "type": "float",
+        "description": "她想脱时自己动手的概率 %",
+        "default": 50.0
+      },
+      "remove_min_minutes": {
+        "type": "int",
+        "description": "刚戴上多少分钟内不会提出脱",
+        "default": 5
+      },
+      "remove_cooldown_minutes": {
+        "type": "int",
+        "description": "提出脱掉后的冷却分钟",
+        "default": 30
+      }
+    }
+  },
+  "fetus": {
+    "type": "object",
+    "description": "👶 胎儿占子宫",
+    "hint": "胎儿按孕月占容量，但不受容量上限限制；占满时只能再容纳一点点。",
+    "items": {
+      "volume_ml": {
+        "type": "float",
+        "description": "满月时每个胎儿占多少 ml",
+        "default": 20.0
+      },
+      "full_ratio": {
+        "type": "float",
+        "description": "占到容量多少算占满",
+        "default": 0.95
+      },
+      "extra_room_ml": {
+        "type": "float",
+        "description": "占满后还能再容纳多少 ml",
+        "default": 2.0
+      }
+    }
+  },
+  "leak": {
+    "type": "object",
+    "description": "💧 子宫漏出",
+    "hint": "漏出来会加羞耻度，有上限；提示会一直生效到不漏为止。",
+    "items": {
+      "shame_gain": {
+        "type": "float",
+        "description": "漏一次加多少羞耻",
+        "default": 4.0
+      },
+      "shame_cap": {
+        "type": "float",
+        "description": "漏出加羞耻的上限",
+        "default": 30.0
+      },
+      "minutes": {
+        "type": "int",
+        "description": "漏出提示保留多久",
+        "default": 10
+      }
+    }
+  },
+  "birth": {
+    "type": "object",
+    "description": "🍼 生产",
+    "hint": "怀孕剩 3 天时进入临产期，之后按时间自动推进；插件没开时暂停，下次打开稍等一会继续。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用生产流程",
+        "default": true
+      },
+      "due_days": {
+        "type": "float",
+        "description": "临产期持续多久（天）",
+        "default": 3.0
+      },
+      "pre_minutes": {
+        "type": "int",
+        "description": "生产前持续多久（分钟）",
+        "default": 120
+      },
+      "active_minutes": {
+        "type": "int",
+        "description": "生产中持续多久（分钟）",
+        "default": 30
+      },
+      "water_wet": {
+        "type": "float",
+        "description": "羊水破了加多少湿润",
+        "default": 40.0
+      },
+      "pain_due": {
+        "type": "float",
+        "description": "临产期产痛",
+        "default": 5.0
+      },
+      "pain_pre": {
+        "type": "float",
+        "description": "生产前产痛",
+        "default": 20.0
+      },
+      "pain_active": {
+        "type": "float",
+        "description": "生产中产痛",
+        "default": 35.0
+      },
+      "pain_per_minute": {
+        "type": "float",
+        "description": "产痛每分钟涨多少",
+        "default": 0.6
+      },
+      "pain_max": {
+        "type": "float",
+        "description": "产痛上限",
+        "default": 100.0
+      },
+      "comfort_relief": {
+        "type": "float",
+        "description": "安抚一次降多少产痛",
+        "default": 8.0
+      },
+      "comfort_keywords": {
+        "type": "list",
+        "description": "安抚关键词",
+        "default": [
+          "安抚",
+          "抱",
+          "陪",
+          "揉",
+          "慢点",
+          "呼吸",
+          "别怕",
+          "在呢"
+        ]
+      },
+      "comfort_cooldown_seconds": {
+        "type": "int",
+        "description": "安抚冷却（秒）",
+        "default": 30
+      },
+      "gap_minutes": {
+        "type": "int",
+        "description": "多久没读算「插件没开」",
+        "default": 10
+      },
+      "resume_delay_seconds": {
+        "type": "int",
+        "description": "恢复后先停多久",
+        "default": 60
+      },
+      "hymen_break": {
+        "type": "bool",
+        "description": "生产时处女膜会破（痛感不叠加）",
+        "default": true
+      }
+    }
+  },
+  "clothing": {
+    "type": "object",
+    "description": "👗 衣装",
+    "hint": "默认白衬衫+蓝短裙+白内裤+白及膝袜+深蓝休闲鞋（可改）；内裤未脱不能直接插入，但可以隔着衣物。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用衣装系统",
+        "default": true
+      },
+      "default_outfit": {
+        "type": "bool",
+        "description": "首次使用给默认穿搭",
+        "default": true
+      },
+      "shame_relief_enabled": {
+        "type": "bool",
+        "description": "穿上会降羞耻",
+        "default": true
+      },
+      "remove_adds_mood": {
+        "type": "bool",
+        "description": "脱下会加羞耻/欲望",
+        "default": true
+      },
+      "remove_shame": {
+        "type": "float",
+        "description": "脱一件加多少羞耻",
+        "default": 10.0
+      },
+      "remove_desire": {
+        "type": "float",
+        "description": "脱一件加多少欲望",
+        "default": 4.0
+      },
+      "wear_shame_relief": {
+        "type": "float",
+        "description": "穿一件降多少羞耻",
+        "default": 5.0
+      },
+      "remove_shame_max": {
+        "type": "float",
+        "default": 40.0,
+        "description": "脱衣加羞耻的上限（总羞耻值，到了就不再加）"
+      },
+      "auto_sleepwear": {
+        "type": "bool",
+        "default": true,
+        "description": "到点自己换睡衣睡裤/睡裙"
+      },
+      "sleepwear_night_hour": {
+        "type": "int",
+        "default": 22,
+        "description": "晚上几点换睡衣"
+      },
+      "sleepwear_morning_hour": {
+        "type": "int",
+        "default": 8,
+        "description": "早上几点换回日常服"
+      },
+      "sleepwear_notice_chance": {
+        "type": "float",
+        "default": 100.0,
+        "description": "换睡衣时告知概率 %"
+      },
+      "sleepwear_seen_chance": {
+        "type": "float",
+        "default": 35.0,
+        "description": "换衣服被看见概率 %"
+      },
+      "sleepwear_seen_shame": {
+        "type": "float",
+        "default": 8.0,
+        "description": "被看见额外羞耻"
+      },
+      "sleepwear_seen_desire": {
+        "type": "float",
+        "default": 4.0,
+        "description": "被看见额外欲望"
+      },
+      "sleepwear_seen_wet": {
+        "type": "float",
+        "default": 3.0,
+        "description": "被看见额外湿润"
+      },
+      "sleepwear_seen_fish_desire": {
+        "type": "float",
+        "default": 3.0,
+        "description": "换衣服被看见时加鱼之心欲"
+      },
+      "change_minutes": {
+        "type": "int",
+        "default": 2,
+        "description": "换衣服需要多少分钟"
+      },
+      "undress_minutes": {
+        "type": "int",
+        "default": 2,
+        "description": "脱下一件衣服需要多少分钟"
+      }
+    }
+  },
+  "unbirth": {
+    "type": "object",
+    "description": "🌀 Unbirth（默认关）",
+    "hint": "缩小后钻进子宫；体积按身高体重 × 缩小比例算，必须小于子宫极限扩张体积。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用 Unbirth",
+        "default": false
+      },
+      "user_height": {
+        "type": "float",
+        "description": "用户身高 cm",
+        "default": 170.0
+      },
+      "user_weight": {
+        "type": "float",
+        "description": "用户体重 kg",
+        "default": 60.0
+      },
+      "shrink_ratio": {
+        "type": "float",
+        "description": "缩小机默认比例",
+        "default": 0.05
+      },
+      "limit_factor": {
+        "type": "float",
+        "description": "子宫极限体积倍率",
+        "default": 1.0
+      },
+      "expand_small": {
+        "type": "float",
+        "description": "少量扩张的占比",
+        "default": 0.35
+      },
+      "expand_mid": {
+        "type": "float",
+        "description": "大量扩张的占比",
+        "default": 0.7
+      },
+      "enter_pleasure": {
+        "type": "float",
+        "description": "钻进去加多少快感",
+        "default": 10.0
+      },
+      "enter_endurance": {
+        "type": "float",
+        "description": "钻进去加多少忍耐",
+        "default": 8.0
+      },
+      "enter_wet": {
+        "type": "float",
+        "description": "钻进去加多少湿润",
+        "default": 12.0
+      },
+      "birth_steps": {
+        "type": "int",
+        "description": "「生出」要几步",
+        "default": 3
+      },
+      "resist_desire": {
+        "type": "float",
+        "description": "逆着来一次加多少欲望",
+        "default": 5.0
+      },
+      "inside_pleasure": {
+        "type": "float",
+        "description": "待在里面每分钟加快感",
+        "default": 0.5
+      },
+      "inside_wet": {
+        "type": "float",
+        "description": "待在里面每分钟加湿润",
+        "default": 1.0
+      },
+      "inside_endurance": {
+        "type": "float",
+        "description": "待在里面每分钟加忍耐",
+        "default": 0.3
+      },
+      "inside_dev": {
+        "type": "float",
+        "description": "待在里面每分钟加子宫开发度",
+        "default": 0.02
+      },
+      "inside_sens": {
+        "type": "float",
+        "description": "待在里面每分钟加子宫敏感度",
+        "default": 0.002
+      },
+      "inside_max_minutes": {
+        "type": "int",
+        "description": "一次最多结算多少分钟",
+        "default": 240
+      },
+      "hymen_pass_pleasure": {
+        "type": "float",
+        "description": "钻过处女膜加快感",
+        "default": 6.0
+      },
+      "hymen_pass_endurance": {
+        "type": "float",
+        "description": "钻过处女膜加忍耐",
+        "default": 4.0
+      },
+      "hymen_pass_wet": {
+        "type": "float",
+        "description": "钻过处女膜加湿润",
+        "default": 8.0
+      },
+      "hymen_pass_desire": {
+        "type": "float",
+        "description": "钻过处女膜加欲望",
+        "default": 5.0
+      },
+      "grow_step": {
+        "type": "float",
+        "description": "每次「变大」增加的比例",
+        "default": 0.15
+      },
+      "birth_min_ratio": {
+        "type": "float",
+        "description": "小于这个缩小比例就生不出来",
+        "default": 0.04
+      },
+      "birth_difficulty": {
+        "type": "float",
+        "description": "出生难度（越大越难）",
+        "default": 60.0
+      },
+      "tube_stage2": {
+        "type": "float",
+        "description": "阴茎头几乎全进来时射输卵管：受孕 %",
+        "default": 8.0
+      },
+      "tube_stage3": {
+        "type": "float",
+        "description": "整个阴茎头都进来时射输卵管：受孕 %",
+        "default": 15.0
+      },
+      "tube_stage4": {
+        "type": "float",
+        "description": "子宫被插满时射输卵管：受孕 %",
+        "default": 25.0
+      },
+      "tube_unbirth": {
+        "type": "float",
+        "description": "Unbirth 在子宫里射输卵管：受孕 %",
+        "default": 35.0
+      },
+      "ovary_prob": {
+        "type": "float",
+        "description": "射进卵巢的受孕 %",
+        "default": 90.0
+      },
+      "birth_depth_steps": {
+        "type": "int",
+        "description": "从子宫里生比从入口生多几步",
+        "default": 2
+      },
+      "birth_step_minutes": {
+        "type": "int",
+        "description": "生出过程中多少分钟掉一步",
+        "default": 10
+      },
+      "resist_chance": {
+        "type": "float",
+        "description": "逆着来成功率 %",
+        "default": 70.0
+      },
+      "resist_add_steps": {
+        "type": "int",
+        "description": "逆着来成功加几步",
+        "default": 1
+      },
+      "resist_keywords": {
+        "type": "list",
+        "description": "算「逆着来」的词",
+        "default": [
+          "逆着来",
+          "按回去",
+          "塞回去",
+          "不让她出来",
+          "别生",
+          "不准生",
+          "憋回去"
+        ]
+      },
+      "birth_giveup_after": {
+        "type": "int",
+        "description": "连续生出失败几次后放弃",
+        "default": 3
+      },
+      "tube_flow_base_minutes": {
+        "type": "int",
+        "description": "输卵管流进卵巢的基准分钟（2ml 时）",
+        "default": 10
+      },
+      "tube_flow_ref_ml": {
+        "type": "float",
+        "description": "基准精液量 ml",
+        "default": 2.0
+      },
+      "tube_fill_percent": {
+        "type": "int",
+        "description": "非直射时子宫填满多少 % 才算流进输卵管",
+        "default": 80
+      },
+      "request_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "允许她主动请求进入"
+      },
+      "request_chance": {
+        "type": "float",
+        "default": 15.0,
+        "description": "主动请求概率 %"
+      },
+      "request_check_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "主动请求检查间隔分钟"
+      },
+      "request_cooldown_minutes": {
+        "type": "int",
+        "default": 180,
+        "description": "主动请求冷却分钟"
+      },
+      "request_wait_minutes": {
+        "type": "int",
+        "default": 10,
+        "description": "请求后等回应分钟"
+      },
+      "overnight_request_chance": {
+        "type": "float",
+        "default": 25.0,
+        "description": "她在里面睡着后主动提出过夜的概率"
+      },
+      "overnight_check_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "多久检查一次要不要提出过夜"
+      },
+      "overnight_invite_chance": {
+        "type": "float",
+        "default": 10.0,
+        "description": "她主动邀请 Unbirth 进来过夜的概率"
+      },
+      "overnight_invite_min_lewd": {
+        "type": "float",
+        "default": 40.0,
+        "description": "淫乱度至少多少才会邀请"
+      }
+    }
+  },
+  "swallow": {
+    "type": "object",
+    "description": "💧 吞精",
+    "hint": "外射后可以收集、也可以射在嘴里再吞；加的快感/欲望/湿润都可调。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用吞精",
+        "default": true
+      },
+      "collect_pleasure": {
+        "type": "float",
+        "description": "收集加多少快感",
+        "default": 4.0
+      },
+      "swallow_pleasure": {
+        "type": "float",
+        "description": "吞下加多少快感",
+        "default": 8.0
+      },
+      "desire_gain": {
+        "type": "float",
+        "description": "收集加多少欲望",
+        "default": 4.0
+      },
+      "wet_gain": {
+        "type": "float",
+        "description": "收集加多少湿润",
+        "default": 5.0
+      },
+      "swallow_desire": {
+        "type": "float",
+        "description": "吞下加多少欲望",
+        "default": 6.0
+      },
+      "swallow_wet": {
+        "type": "float",
+        "description": "吞下加多少湿润",
+        "default": 6.0
+      },
+      "auto_enabled": {
+        "type": "bool",
+        "description": "外射后她会自主决定要不要收集/吞",
+        "default": true
+      },
+      "auto_chance": {
+        "type": "float",
+        "description": "自主收集概率 %",
+        "default": 35.0
+      },
+      "auto_swallow_chance": {
+        "type": "float",
+        "description": "收集后直接吞的概率 %",
+        "default": 50.0
+      },
+      "swallow_lewd": {
+        "type": "float",
+        "default": 3.0,
+        "description": "吞精时增加的淫乱度"
+      },
+      "endurance_gain": {
+        "type": "float",
+        "default": 2.0,
+        "description": "吞精时增加的忍耐"
+      }
+    }
+  },
+  "ear": {
+    "type": "object",
+    "description": "👂 耳朵（哈热气/舔耳）",
+    "hint": "日常、小场景、受孕场景都能用；加敏感/快感/羞耻/忍耐/湿润，低概率触发高潮，不会触发责怪。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用",
+        "default": true
+      },
+      "dev_gain": {
+        "type": "float",
+        "description": "每次加多少开发度",
+        "default": 0.3
+      },
+      "sens_gain": {
+        "type": "float",
+        "description": "每次加多少敏感度",
+        "default": 0.005
+      },
+      "pleasure_gain": {
+        "type": "float",
+        "description": "加多少快感",
+        "default": 3.0
+      },
+      "shame_gain": {
+        "type": "float",
+        "description": "加多少羞耻",
+        "default": 3.0
+      },
+      "endurance_gain": {
+        "type": "float",
+        "description": "加多少忍耐",
+        "default": 2.0
+      },
+      "wet_gain": {
+        "type": "float",
+        "description": "加多少湿润",
+        "default": 4.0
+      },
+      "orgasm_chance": {
+        "type": "float",
+        "description": "触发高潮的概率 %",
+        "default": 6.0
+      }
+    }
+  },
+  "kiss": {
+    "type": "object",
+    "description": "💋 舌吻",
+    "hint": "日常、小场景、受孕场景都能用；加敏感/快感/羞耻/忍耐/湿润。",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用",
+        "default": true
+      },
+      "dev_gain": {
+        "type": "float",
+        "description": "每次加多少开发度",
+        "default": 0.3
+      },
+      "sens_gain": {
+        "type": "float",
+        "description": "每次加多少敏感度",
+        "default": 0.005
+      },
+      "pleasure_gain": {
+        "type": "float",
+        "description": "加多少快感",
+        "default": 3.0
+      },
+      "shame_gain": {
+        "type": "float",
+        "description": "加多少羞耻",
+        "default": 3.0
+      },
+      "endurance_gain": {
+        "type": "float",
+        "description": "加多少忍耐",
+        "default": 2.0
+      },
+      "wet_gain": {
+        "type": "float",
+        "description": "加多少湿润",
+        "default": 4.0
+      },
+      "french_pleasure": {
+        "type": "float",
+        "description": "舌吻额外加快感",
+        "default": 2.0
+      }
+    }
+  },
+  "lewd": {
+    "type": "object",
+    "description": "淫乱度",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "启用淫乱度"
+      },
+      "max": {
+        "type": "float",
+        "default": 100.0,
+        "description": "上限"
+      },
+      "scene_add": {
+        "type": "float",
+        "default": 8.0,
+        "description": "每次受孕场景加多少"
+      },
+      "daily_add": {
+        "type": "float",
+        "default": 5.0,
+        "description": "每次日常小场景加多少"
+      },
+      "tick_minutes": {
+        "type": "int",
+        "default": 20,
+        "description": "每隔多少分钟让欲望/湿润涨一次"
+      },
+      "tick_min": {
+        "type": "float",
+        "default": 30.0,
+        "description": "淫乱度高于多少才自动涨"
+      },
+      "cost_per_tick": {
+        "type": "float",
+        "default": 4.0,
+        "description": "每次自动涨消耗多少淫乱度"
+      },
+      "desire_per_tick": {
+        "type": "float",
+        "default": 3.0,
+        "description": "每次自动涨多少欲望"
+      },
+      "wet_per_tick": {
+        "type": "float",
+        "default": 3.0,
+        "description": "每次自动涨多少湿润"
+      },
+      "decay_after_minutes": {
+        "type": "int",
+        "default": 120,
+        "description": "多久没增长后开始回退"
+      },
+      "decay_per_hour": {
+        "type": "float",
+        "default": 4.0,
+        "description": "回退速度/小时"
+      },
+      "prompt_min": {
+        "type": "float",
+        "default": 15.0,
+        "description": "淫乱度低于多少不注入提示词"
+      },
+      "level_at_2": {
+        "type": "float",
+        "default": 25.0,
+        "description": "第2段阈值 %"
+      },
+      "level_at_3": {
+        "type": "float",
+        "default": 50.0,
+        "description": "第3段阈值 %"
+      },
+      "level_at_4": {
+        "type": "float",
+        "default": 75.0,
+        "description": "第4段阈值 %"
+      }
+    }
+  },
+  "night_raid": {
+    "type": "object",
+    "description": "夜袭",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "启用夜袭"
+      },
+      "start_hour": {
+        "type": "int",
+        "default": 23,
+        "description": "夜袭起始小时"
+      },
+      "end_hour": {
+        "type": "int",
+        "default": 4,
+        "description": "夜袭结束小时"
+      },
+      "desire_min": {
+        "type": "float",
+        "default": 65.0,
+        "description": "欲望至少多少"
+      },
+      "wet_min": {
+        "type": "float",
+        "default": 65.0,
+        "description": "湿润至少多少"
+      },
+      "chance": {
+        "type": "float",
+        "default": 35.0,
+        "description": "满足条件后夜袭概率 %"
+      },
+      "wait_minutes": {
+        "type": "int",
+        "default": 10,
+        "description": "等主人回应多少分钟"
+      },
+      "cooldown_hours": {
+        "type": "int",
+        "default": 6,
+        "description": "夜袭冷却小时"
+      },
+      "pc_keywords": {
+        "type": "list",
+        "default": [
+          "熬夜",
+          "失眠",
+          "睡不着",
+          "没睡",
+          "通宵",
+          "还醒着"
+        ],
+        "description": "PC 状态里算熬夜的词"
+      },
+      "lewd_late_per_point": {
+        "type": "float",
+        "default": 0.5,
+        "description": "每点淫乱度增加多少熬夜概率 %"
+      },
+      "lewd_late_max": {
+        "type": "float",
+        "default": 80.0,
+        "description": "淫乱度带来的熬夜概率上限 %"
+      },
+      "energy_gain": {
+        "type": "int",
+        "default": 5,
+        "description": "夜袭触发时给 PC 加多少精力"
+      },
+      "pregnancy_chance": {
+        "type": "float",
+        "default": 5.0,
+        "description": "孕期夜袭概率 %"
+      },
+      "activity_window_minutes": {
+        "type": "int",
+        "default": 240,
+        "description": "最近活动回看多少分钟"
+      },
+      "after_ejac_minutes": {
+        "type": "int",
+        "default": 360,
+        "description": "射过后压低夜袭概率持续多少分钟"
+      },
+      "after_ejac_factor": {
+        "type": "float",
+        "default": 0.2,
+        "description": "射过后夜袭概率乘数"
+      },
+      "unfinished_minutes": {
+        "type": "int",
+        "default": 180,
+        "description": "没射没高潮后提高夜袭概率持续多少分钟"
+      },
+      "unfinished_bonus": {
+        "type": "float",
+        "default": 20.0,
+        "description": "没射没高潮夜袭概率加多少点"
+      },
+      "lead_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "提前多少分钟显示夜袭预估"
+      },
+      "afterglow_minutes": {
+        "type": "int",
+        "default": 10,
+        "description": "夜袭结束后余韵多少分钟（PC 深夜开口继续放开）"
+      },
+      "pc_stay_up_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "把 PC 的熬夜/失眠条件算进夜袭"
+      },
+      "fish_stay_up_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "把鱼之心的熬夜算进夜袭"
+      },
+      "fish_stay_up_bonus": {
+        "type": "float",
+        "default": 0.5,
+        "description": "每点淫乱度加多少鱼之心熬夜概率 %"
+      },
+      "very_high_desire": {
+        "type": "float",
+        "default": 85.0,
+        "description": "欲望到多少算非常想要"
+      },
+      "very_high_bonus": {
+        "type": "float",
+        "default": 20.0,
+        "description": "非常想要时夜袭概率 +多少点"
+      },
+      "very_high_wet_min": {
+        "type": "float",
+        "default": 80.0,
+        "description": "非常想要还要至少多湿"
+      },
+      "after_scene_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "活动结束多久内不触发夜袭"
+      }
+    }
+  },
+  "desire": {
+    "type": "object",
+    "description": "欲望来源策略",
+    "items": {
+      "night_raid": {
+        "type": "string",
+        "default": "max",
+        "description": "夜袭读取哪条欲望（mood/fish/dark/max）"
+      },
+      "daily_scene": {
+        "type": "string",
+        "default": "mood",
+        "description": "日常小场景读取哪条欲望"
+      },
+      "wetness": {
+        "type": "string",
+        "default": "fish",
+        "description": "湿润度读取哪条欲望"
+      },
+      "conception": {
+        "type": "string",
+        "default": "both",
+        "description": "受孕概率读取哪条欲望（mood/fish/dark/max/both）"
+      }
+    }
+  },
+  "asmr": {
+    "type": "object",
+    "description": "🌙 ASMR 助眠",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "启用 ASMR 助眠"
+      },
+      "request_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "允许她夜里主动请求助眠"
+      },
+      "request_start_hour": {
+        "type": "int",
+        "default": 21,
+        "description": "请求开始小时"
+      },
+      "request_end_hour": {
+        "type": "int",
+        "default": 3,
+        "description": "请求结束小时"
+      },
+      "request_chance": {
+        "type": "float",
+        "default": 35.0,
+        "description": "请求概率 %"
+      },
+      "request_wait_minutes": {
+        "type": "int",
+        "default": 10,
+        "description": "请求等回应分钟"
+      },
+      "default_minutes": {
+        "type": "int",
+        "default": 20,
+        "description": "默认助眠分钟"
+      },
+      "extend_minutes": {
+        "type": "int",
+        "default": 5,
+        "description": "每次续几分钟"
+      },
+      "max_minutes": {
+        "type": "int",
+        "default": 90,
+        "description": "单次最长分钟"
+      },
+      "sleep_relief": {
+        "type": "float",
+        "default": 8.0,
+        "description": "每次助眠提高 PC 睡眠压力"
+      },
+      "sleep_relief_cap": {
+        "type": "float",
+        "default": 30.0,
+        "description": "单次助眠提高睡眠压力上限"
+      },
+      "intimacy_gain": {
+        "type": "float",
+        "default": 0.6,
+        "description": "每次助眠加亲密"
+      },
+      "intimacy_cap": {
+        "type": "float",
+        "default": 6.0,
+        "description": "单次助眠亲密上限"
+      },
+      "attachment_gain": {
+        "type": "float",
+        "default": 0.8,
+        "description": "每次助眠加依恋"
+      },
+      "attachment_cap": {
+        "type": "float",
+        "default": 8.0,
+        "description": "单次助眠依恋上限"
+      },
+      "ear_sens_gain": {
+        "type": "float",
+        "default": 0.01,
+        "description": "每次助眠加耳朵敏感"
+      },
+      "ear_sens_cap": {
+        "type": "float",
+        "default": 0.2,
+        "description": "单次助眠耳朵敏感上限"
+      },
+      "pleasure_gain": {
+        "type": "float",
+        "default": 2.5,
+        "description": "每次助眠加快感"
+      },
+      "pleasure_cap": {
+        "type": "float",
+        "default": 20.0,
+        "description": "单次助眠快感上限"
+      },
+      "shame_gain": {
+        "type": "float",
+        "default": 4.0,
+        "description": "第一次助眠加羞耻"
+      },
+      "shame_cap": {
+        "type": "float",
+        "default": 16.0,
+        "description": "单次助眠羞耻上限"
+      },
+      "shame_decay_per_session": {
+        "type": "float",
+        "default": 0.8,
+        "description": "每次助眠后羞耻增益衰减"
+      },
+      "shame_floor": {
+        "type": "float",
+        "default": 0.8,
+        "description": "羞耻增益最低值"
+      },
+      "wet_gain": {
+        "type": "float",
+        "default": 0.5,
+        "description": "每次助眠加湿润"
+      },
+      "pregnancy_relief": {
+        "type": "float",
+        "default": 25.0,
+        "description": "孕期助眠缓解不适（每点）"
+      },
+      "pregnancy_relief_cap": {
+        "type": "float",
+        "default": 60.0,
+        "description": "孕期助眠缓解上限"
+      },
+      "sleep_chance": {
+        "type": "float",
+        "default": 30.0,
+        "description": "结束助眠时她已经睡着的概率 %"
+      },
+      "request_requires_known": {
+        "type": "bool",
+        "default": true,
+        "description": "需要她先知道你会助眠才会主动请求"
+      },
+      "known_keywords": {
+        "type": "list",
+        "default": [
+          "助眠",
+          "ASMR",
+          "asmr",
+          "哄睡"
+        ],
+        "description": "她听到这些词就知道你会助眠"
+      },
+      "sleep_relief_daily_cap": {
+        "type": "float",
+        "default": 40.0,
+        "description": "每 24 小时最多提高多少睡眠压力"
+      },
+      "wet_cap": {
+        "type": "float",
+        "default": 20.0,
+        "description": "单次助眠最多增加多少湿润"
+      },
+      "request_generate": {
+        "type": "bool",
+        "default": true,
+        "description": "请求文案由模型按她的口吻生成"
+      },
+      "endurance_gain": {
+        "type": "float",
+        "default": 2.0,
+        "description": "每次 ASMR 动作增加多少忍耐"
+      },
+      "endurance_cap": {
+        "type": "float",
+        "default": 20.0,
+        "description": "单次 ASMR 最多增加多少忍耐"
+      },
+      "request_once_per_night": {
+        "type": "bool",
+        "default": true,
+        "description": "每晚最多请求一次；当晚已助眠过就不再问"
+      },
+      "request_judge": {
+        "type": "bool",
+        "default": true,
+        "description": "请求前让她先判断当前情景是否适合开口"
+      },
+      "request_defer_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "不适合时延后多少分钟再判断"
+      }
+    }
+  },
+  "sleep_inside": {
+    "type": "object",
+    "description": "睡眠中保持插入",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "启用插入入睡"
+      },
+      "ask_wait_minutes": {
+        "type": "int",
+        "default": 5,
+        "description": "询问后等她答应多少分钟"
+      },
+      "slight_pleasure": {
+        "type": "float",
+        "default": 2.0,
+        "description": "轻微抽插加多少快感"
+      },
+      "slight_wet": {
+        "type": "float",
+        "default": 1.0,
+        "description": "轻微抽插加多少湿润"
+      },
+      "slight_endurance": {
+        "type": "float",
+        "default": 0.5,
+        "description": "轻微抽插加多少忍耐"
+      },
+      "slight_desire": {
+        "type": "float",
+        "default": 1.0,
+        "description": "轻微抽插加多少欲望"
+      },
+      "overnight_request_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "她可以主动提出让他在里面过夜"
+      },
+      "overnight_request_chance": {
+        "type": "float",
+        "default": 12.0,
+        "description": "不在里面时主动提出的概率"
+      },
+      "overnight_min_lewd": {
+        "type": "float",
+        "default": 45.0,
+        "description": "淫乱度至少多少才会提"
+      },
+      "keywords": {
+        "type": "object",
+        "description": "从对话识别插入部位的词",
+        "items": {
+          "vagina": {
+            "type": "list",
+            "default": [
+              "阴道",
+              "前面",
+              "插进来",
+              "进来"
+            ]
+          },
+          "anus": {
+            "type": "list",
+            "default": [
+              "后面",
+              "肛",
+              "肛门",
+              "后庭"
+            ]
+          },
+          "tail": {
+            "type": "list",
+            "default": [
+              "尾巴",
+              "尾根"
+            ]
+          },
+          "unbirth": {
+            "type": "list",
+            "default": [
+              "子宫",
+              "unbirth",
+              "最里面",
+              "深处"
+            ]
+          }
+        }
+      },
+      "ask_night_start_hour": {
+        "type": "int",
+        "default": 21,
+        "description": "睡前/熬夜可问的起始小时"
+      },
+      "ask_night_end_hour": {
+        "type": "int",
+        "default": 6,
+        "description": "睡前/熬夜可问的结束小时"
+      }
+    }
+  },
+  "children": {
+    "type": "object",
+    "description": "出生后的孩子（只记录背景）",
+    "items": {
+      "care_mode": {
+        "type": "string",
+        "default": "family",
+        "description": "出生后谁带：self 自己带 / family 家人 / nanny 保姆 / adoption 送养 / background 纯背景"
+      },
+      "intimacy_interrupt_enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "自己带孩子时，亲密场景可能被打断"
+      },
+      "intimacy_interrupt_chance": {
+        "type": "float",
+        "default": 20.0,
+        "description": "每次开始亲密场景被打断的概率 %"
+      },
+      "intimacy_child_max_age_years": {
+        "type": "int",
+        "default": 3,
+        "description": "孩子几岁前会打断"
+      },
+      "prompt_on_request": {
+        "type": "bool",
+        "default": true,
+        "description": "只在聊到孩子/她主动想起时注入孩子信息"
+      },
+      "adult_destination": {
+        "type": "string",
+        "default": "已经独立生活、自己成家了",
+        "description": "满20岁移出列表时写进记忆的去向"
+      }
+    }
+  },
+  "menstrual": {
+    "type": "object",
+    "description": "月经期经血与卫生巾",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "启用经血流量"
+      },
+      "flow_ml_per_hour": {
+        "type": "float",
+        "default": 4.0,
+        "description": "月经期每小时大约流多少 ml"
+      },
+      "flow_jitter": {
+        "type": "float",
+        "default": 0.35,
+        "description": "流量上下浮动比例"
+      },
+      "capacity_ml": {
+        "type": "float",
+        "default": 60.0,
+        "description": "子宫里最多积多少经血"
+      },
+      "drain_ml_per_hour": {
+        "type": "float",
+        "default": 8.0,
+        "description": "非经期残余每小时排掉多少"
+      },
+      "pad_capacity_ml": {
+        "type": "float",
+        "default": 20.0,
+        "description": "卫生巾吸收容量 ml"
+      },
+      "change_at_percent": {
+        "type": "float",
+        "default": 80.0,
+        "description": "卫生巾吸到百分之几她会换"
+      },
+      "change_min_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "两次换卫生巾至少隔多少分钟"
+      },
+      "auto_pad": {
+        "type": "bool",
+        "default": true,
+        "description": "月经期自动穿/换卫生巾"
+      },
+      "pad_change_shame": {
+        "type": "float",
+        "default": 6.0,
+        "description": "换卫生巾时加多少羞耻"
+      },
+      "pad_change_desire": {
+        "type": "float",
+        "default": 4.0,
+        "description": "换卫生巾时加多少欲望"
+      },
+      "pad_change_wet": {
+        "type": "float",
+        "default": 4.0,
+        "description": "换卫生巾时加多少湿润"
+      },
+      "pad_change_fish_desire": {
+        "type": "float",
+        "default": 3.0,
+        "description": "换卫生巾时加多少鱼之心欲"
+      },
+      "pad_seen_chance": {
+        "type": "float",
+        "default": 35.0,
+        "description": "换卫生巾被看到的概率 %"
+      },
+      "pad_seen_shame": {
+        "type": "float",
+        "default": 8.0,
+        "description": "被看到时额外加多少羞耻"
+      },
+      "pad_notice_chance": {
+        "type": "float",
+        "default": 100.0,
+        "description": "换卫生巾时发暗示消息的概率 %"
+      },
+      "pad_warn_minutes": {
+        "type": "int",
+        "default": 2,
+        "description": "换卫生巾前提前多少分钟告诉她"
+      },
+      "pad_change_minutes": {
+        "type": "int",
+        "default": 2,
+        "description": "换卫生巾实际耗时多少分钟"
+      },
+      "pad_mixed_shame": {
+        "type": "float",
+        "default": 8.0,
+        "description": "卫生巾上混有经血以外液体时额外羞耻"
+      },
+      "pad_mixed_desire": {
+        "type": "float",
+        "default": 6.0,
+        "description": "混有其它液体时额外欲望"
+      },
+      "pad_mixed_fish_desire": {
+        "type": "float",
+        "default": 4.0,
+        "description": "混有其它液体时额外鱼之心欲"
+      },
+      "pad_mixed_wet": {
+        "type": "float",
+        "default": 5.0,
+        "description": "混有其它液体时额外湿润"
+      },
+      "pad_unbirth_shame": {
+        "type": "float",
+        "default": 8.0,
+        "description": "换卫生巾时 Unbirth 还在里面额外羞耻"
+      },
+      "pad_unbirth_desire": {
+        "type": "float",
+        "default": 6.0,
+        "description": "还在里面额外欲望"
+      },
+      "pad_unbirth_wet": {
+        "type": "float",
+        "default": 6.0,
+        "description": "还在里面额外湿润"
+      },
+      "pad_unbirth_fish_desire": {
+        "type": "float",
+        "default": 4.0,
+        "description": "还在里面额外鱼之心欲"
+      },
+      "pad_shame_cap": {
+        "type": "float",
+        "default": 99.0,
+        "description": "卫生巾相关羞耻加到多少就算顶，之后不再加（不触发满溢责怪）"
+      },
+      "pad_models": {
+        "type": "object",
+        "description": "各型号卫生巾容量 ml",
+        "items": {
+          "liner": {
+            "type": "float",
+            "default": 8.0,
+            "description": "护垫"
+          },
+          "regular": {
+            "type": "float",
+            "default": 20.0,
+            "description": "日用"
+          },
+          "night": {
+            "type": "float",
+            "default": 35.0,
+            "description": "夜用"
+          },
+          "pants": {
+            "type": "float",
+            "default": 60.0,
+            "description": "安睡裤"
+          }
+        }
+      },
+      "pad_auto_choose": {
+        "type": "bool",
+        "default": true,
+        "description": "按时间和流量自己选型号"
+      },
+      "pad_seen_fish_desire": {
+        "type": "float",
+        "default": 3.0,
+        "description": "换卫生巾被看见时加鱼之心欲"
+      }
+    }
+  },
+  "schedule": {
+    "type": "object",
+    "description": "主动消息",
+    "items": {
+      "notice_delay_seconds": {
+        "type": "int",
+        "default": 0,
+        "description": "主动消息延迟秒数"
+      },
+      "generate_proactive": {
+        "type": "bool",
+        "default": true,
+        "description": "主动消息是否由模型按她的口吻生成"
+      },
+      "proactive_judge": {
+        "type": "bool",
+        "default": true,
+        "description": "主动请求前先让她判断情景是否适合"
+      },
+      "proactive_defer_minutes": {
+        "type": "int",
+        "default": 30,
+        "description": "不适合时延后多少分钟再判断"
+      }
+    }
+  }
+}

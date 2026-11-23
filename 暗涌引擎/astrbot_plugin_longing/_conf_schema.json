@@ -1,0 +1,47 @@
+{
+  "enabled": {
+    "type": "bool",
+    "description": "总开关：把暗涌的状态块注入提示词（只在主人私聊生效）",
+    "default": true
+  },
+  "runner_url": {
+    "type": "string",
+    "description": "暗涌运行器地址（runner.mjs 监听的本机端口）",
+    "default": "http://127.0.0.1:6399"
+  },
+  "owner_qq": {
+    "type": "string",
+    "description": "主人 QQ（只有这个人的私聊会被注入，不填则不注入）",
+    "default": ""
+  },
+  "channel": {
+    "type": "string",
+    "description": "通道标识，原版用它判断该不该演欲望；AstrBot 这套固定填 qq",
+    "default": "qq"
+  },
+  "inject_mode": {
+    "type": "string",
+    "description": "注入方式：system=拼进系统提示；temp=作为临时用户片段（更靠后，但会当成本轮输入的一部分）",
+    "default": "system"
+  },
+  "feed_events": {
+    "type": "bool",
+    "description": "把主人说的话推给引擎识别事件（夸奖/拒绝/安全词等），让它随时间变化",
+    "default": true
+  },
+  "fallback_file": {
+    "type": "string",
+    "description": "引擎没响应时的兜底注入文件（10 分钟内更新过才用）",
+    "default": "C:\\DeepSeek\\暗涌\\data\\欲望注入.qq.txt"
+  },
+  "timeout_seconds": {
+    "type": "int",
+    "description": "访问引擎的超时（秒）",
+    "default": 3
+  },
+  "max_block_chars": {
+    "type": "int",
+    "description": "注入块的长度上限，超出截断（防止异常内容撑爆上下文）",
+    "default": 1200
+  }
+}

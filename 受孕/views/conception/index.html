@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>受孕</title>
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 32 32">
+        <path d="M16 28C9.4 22.9 4 18.2 4 12.6 4 8.9 6.9 6 10.5 6c2.3 0 4.3 1.2 5.5 3 1.2-1.8 3.2-3 5.5-3C25.1 6 28 8.9 28 12.6 28 18.2 22.6 22.9 16 28z" />
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>受孕</h1>
+      <p class="sub" id="subtitle">正在读取她的身体状态…</p>
+    </div>
+  </div>
+  <div class="status-bar" id="statusBar">
+    <span class="status-main" id="statusMain" data-tone="calm">平静</span>
+    <span class="status-note" id="statusNote">—</span>
+    <span class="status-chips" id="statusChips"></span>
+  </div>
+  <div class="topbar-right">
+    <span class="badge" id="genderBadge" data-tone="muted">人格 —</span>
+    <span class="badge" id="gateBadge" data-tone="muted">成人层 —</span>
+    <span class="badge" id="sceneBadge" data-tone="muted">场景 —</span>
+    <button class="ghost-btn" id="btnRefresh" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      刷新
+    </button>
+  </div>
+</header>
+
+<section class="error-card" id="errorCard" hidden>
+  <h2>读不到她的状态</h2>
+  <p id="errorText"></p>
+  <button class="ghost-btn" id="btnRetry" type="button">重试</button>
+</section>
+
+<main class="grid" id="grid" hidden>
+  <section class="card card-now">
+    <div class="card-head"><h2>此刻 <span class="badge tiny" id="testBadge" hidden>该验一验了</span></h2><span class="hint" id="nowHint">—</span></div>
+    <div class="now-body">
+      <div class="now-left">
+        <div class="now-score"><b id="pleasureValue">0</b><span>/<i id="pleasureMax">100</i></span></div>
+        <div class="now-tier" id="pleasureTier">—</div>
+        <div class="meter big"><i id="pleasureFill"></i><em class="mark" id="thresholdMark" title="高潮门槛"></em></div>
+        <p class="now-hint" id="pleasureHint">—</p>
+      </div>
+      <div class="now-right">
+        <div class="combo-head"><span>连续高潮</span>
+          <b id="comboCount">0</b>
+          <span class="muted">/</span>
+          <button class="step-btn" id="comboMinus" type="button" title="上限减一">−</button>
+          <i id="comboLimit">3</i>
+          <button class="step-btn" id="comboPlus" type="button" title="上限加一">＋</button></div>
+        <div class="combo-dots" id="comboDots"></div>
+        <p class="combo-hint" id="comboHint">—</p>
+        <div class="mini-stats">
+          <div><span>本次高潮</span><b id="orgasmSession">0</b></div>
+          <div><span>今日</span><b id="orgasmToday">0</b></div>
+          <div><span>累计</span><b id="orgasmTotal">0</b></div>
+          <div><span>射精</span><b id="ejacTotal">0</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="actions" id="nowActions">
+      <button class="act-btn" data-action="pleasure" data-amount="12" type="button">快感 +12</button>
+      <button class="act-btn" data-action="orgasm" type="button">记一次高潮</button>
+      <button class="act-btn ghost" data-action="edge" type="button">寸止</button>
+    </div>
+    <div class="now-settings">
+      <label>场景持续
+        <input class="tune-input" type="number" min="1" max="720" step="1" data-section="adult" data-key="scene_window_minutes">
+        <span>分钟</span>
+      </label>
+      <label>余韵持续
+        <input class="tune-input" type="number" min="0" max="120" step="1" data-section="pleasure" data-key="post_orgasm_minutes">
+        <span>分钟</span>
+      </label>
+    </div>
+    <div class="uterus">
+      <div class="uterus-head"><span>子宫</span><b id="uterusMl">0</b><span class="muted">/ <i id="uterusMax">20</i> ml</span><span class="uterus-tier" id="uterusTier">空</span><span class="uterus-tier" id="uterusStretch" hidden>撑开</span></div>
+      <div class="meter"><i id="uterusFill"></i></div>
+    </div>
+    <div class="endurance">
+      <div class="uterus-head">
+        <span>忍耐</span><b id="enduranceValue">0</b><span class="muted">/ <i id="enduranceCap">100</i></span>
+        <span class="uterus-tier" id="enduranceTier">—</span>
+        <button class="link-btn" id="btnEnduranceSettings" type="button">忍耐设置</button>
+      </div>
+      <div class="meter"><i id="enduranceFill"></i></div>
+      <p class="now-hint" id="enduranceHint">—</p>
+    </div>
+    <div class="endurance">
+      <div class="uterus-head">
+        <span>她的阴道湿润度</span><b id="wetnessValue">0</b><span class="muted">/ 100</span>
+        <span class="uterus-tier" id="wetnessTier">—</span>
+        <span class="lube-badge" id="lubeBadge" hidden>润滑中</span>
+        <button class="link-btn" id="btnLube" type="button">用润滑油</button>
+        <button class="link-btn" id="btnLubeHand" type="button">润滑手</button>
+      <button class="link-btn" id="btnLubeBreast" type="button">润滑乳房</button>
+      <button class="link-btn" id="btnLubeNipple" type="button">润滑乳头</button>
+      <button class="link-btn" id="btnLubePenis" type="button">润滑阴茎</button>
+        <button class="link-btn" id="btnWetnessEditor" type="button">湿润度设置</button>
+      </div>
+      <div class="meter"><i id="wetnessFill"></i></div>
+      <p class="now-hint" id="wetnessHint">—</p>
+    </div>
+    <div class="endurance" id="waterBlock">
+      <div class="uterus-head">
+        <span>水量</span><b id="waterValue">0</b><span class="muted">/ <i id="waterMax">100</i></span>
+        <span class="uterus-tier" id="waterTier">—</span>
+        <button class="link-btn" id="btnSquirtPrompts" type="button">潮吹提示词</button>
+        <button class="link-btn" id="btnSquirtEditor" type="button">设置</button>
+      </div>
+      <div class="meter"><i id="waterFill"></i></div>
+      <p class="now-hint" id="waterHint">—</p>
+    </div>
+    <div class="endurance" id="lewdBlock">
+      <div class="uterus-head">
+        <span>淫乱度</span><b id="lewdValue">0</b><span class="muted">/ <i id="lewdMax">100</i></span>
+        <span class="uterus-tier" id="lewdTier">—</span>
+        <button class="link-btn" id="btnLewdPrompts" type="button">淫乱度提示词</button>
+        <button class="link-btn" id="btnLewdEditor" type="button">设置</button>
+      </div>
+      <div class="meter"><i id="lewdFill"></i></div>
+      <p class="now-hint" id="lewdHint">—</p>
+    </div>
+    <div class="endurance" id="nightRaidBlock">
+      <div class="uterus-head">
+        <span>夜袭</span>
+        <span class="uterus-tier" id="nrBadge">—</span>
+        <button class="link-btn" id="btnNightRaidPrompts" type="button">提示词</button>
+        <button class="link-btn" id="btnNightRaidEditor" type="button">设置</button>
+      </div>
+      <p class="now-hint" id="nrHint">—</p>
+    </div>
+    <div class="endurance" id="desireStrategyBlock" hidden>
+      <div class="uterus-head">
+        <span>欲望来源</span>
+        <span class="hint" id="desireStrategyHint">每个功能单独选</span>
+      </div>
+      <div id="desireStrategyRows"></div>
+    </div>
+    <div class="us-block" id="swallowBlock" hidden>
+      <div class="us-head">
+        <b>精液</b>
+        <span class="badge tiny" id="swallowBadge" data-tone="muted">—</span>
+        <button class="link-btn" id="btnSwallowEditor" type="button">设置</button>
+      </div>
+      <p class="us-hint" id="swallowHint"></p>
+      <div class="us-actions">
+        <button class="act-btn" id="btnSwCollect" type="button">收集</button>
+        <button class="act-btn ghost" id="btnSwMouth" type="button">射嘴里</button>
+        <button class="act-btn" id="btnSwSwallow" type="button">吞下去</button>
+      </div>
+    </div>
+    <div class="us-block" id="asmrBlock">
+      <div class="us-head">
+        <b>ASMR 助眠</b>
+        <span class="badge tiny" id="asmrBadge" data-tone="muted">—</span>
+        <button class="link-btn" id="btnAsmrPrompts" type="button">提示词</button>
+        <button class="link-btn" id="btnAsmrSettings" type="button">设置</button>
+      </div>
+      <p class="us-hint" id="asmrHint">—</p>
+      <div class="us-actions">
+        <input class="ue-input" id="asmrMinutes" type="number" min="1" max="240" step="1" value="20" style="max-width:90px">
+        <button class="act-btn" id="btnAsmrStart" type="button">开始助眠</button>
+        <button class="act-btn ghost" id="btnAsmrExtend" type="button">续时间</button>
+        <button class="act-btn ghost" id="btnAsmrEnd" type="button">结束</button>
+      </div>
+      <div class="asmr-grid" id="asmrActions">
+        <button class="act-btn ghost" data-asmr-key="ear_pick" type="button">耳搔</button>
+        <button class="act-btn ghost" data-asmr-key="feather" type="button">鹅毛棒</button>
+        <button class="act-btn ghost" data-asmr-key="brahma" type="button">梵天</button>
+        <button class="act-btn ghost" data-asmr-key="fluffy" type="button">绒毛棒</button>
+        <button class="act-btn ghost" data-asmr-key="whisper" type="button">耳边低语</button>
+        <button class="act-btn ghost" data-asmr-key="music" type="button">助眠音</button>
+        <button class="act-btn ghost" data-asmr-key="blow" type="button">哈热气</button>
+        <button class="act-btn ghost" data-asmr-key="cover" type="button">捂耳</button>
+        <button class="act-btn ghost" data-asmr-key="cover_rub" type="button">捂耳轻揉</button>
+        <button class="act-btn ghost" data-asmr-key="suck" type="button">含耳</button>
+        <button class="act-btn ghost" data-asmr-key="lick" type="button">舔耳道</button>
+      </div>
+    </div>
+    <div class="us-block" id="unbirthBlock" hidden>
+      <div class="us-head">
+        <b>Unbirth</b>
+        <span class="badge tiny" id="unbirthBadge" data-tone="muted">—</span>
+        <span class="badge tiny" id="ubPos" data-tone="muted" hidden>—</span>
+        <label class="mini-switch" title="Unbirth 默认关，打开后可用">
+          <input type="checkbox" id="ubOn">
+          <span id="ubOnText">关</span>
+        </label>
+        <button class="link-btn" id="btnUnbirthPrompts" type="button">Unbirth 提示词</button>
+        <button class="link-btn" id="btnUnbirthEditor" type="button">设置</button>
+      </div>
+      <p class="us-hint" id="unbirthHint"></p>
+      <div class="sleep-rows">
+        <label>经过处女膜
+          <select class="ue-input" id="ubHymenMode">
+            <option value="pass">钻过去（不破）</option>
+            <option value="break">撞破</option>
+          </select>
+        </label>
+      </div>
+      <div class="us-actions">
+        <button class="act-btn" id="btnUbShrink" type="button">缩小</button>
+        <button class="act-btn" id="btnUbGrow" type="button">变大</button>
+        <button class="act-btn ghost" id="btnUbRestore" type="button">还原</button>
+        <button class="act-btn" id="btnUbEnter" type="button">钻进去</button>
+              <button class="act-btn" id="btnUbTube" type="button">钻进输卵管</button>
+              <button class="act-btn" id="btnUbOvary" type="button">钻进卵巢</button>
+        <button class="act-btn ghost" id="btnUbExit" type="button">退出来</button>
+        <button class="act-btn ghost" id="btnUbBirth" type="button">生出来</button>
+        <button class="act-btn ghost" id="btnUbResist" type="button">逆着来</button>
+      </div>
+    </div>
+    <div class="us-block" id="sleepInsideBlock" hidden>
+      <div class="us-head"><b>插入入睡</b><span class="badge tiny" id="sleepInsideBadge" data-tone="muted">—</span>
+        <button class="link-btn" id="btnSleepInsideKeywords" type="button">关键词设置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sleepInsideMode">部位</label>
+        <select class="ue-input" id="sleepInsideMode">
+          <option value="vagina">阴道里</option>
+          <option value="anus">后面</option>
+          <option value="tail">尾巴里</option>
+          <option value="unbirth">子宫里</option>
+        </select>
+      </div>
+      <div class="us-actions">
+        <button class="act-btn" id="btnSleepInsideAsk" type="button">问她能不能这样睡</button>
+        <button class="act-btn" id="btnSleepInsideAccept" type="button">她答应了</button>
+        <button class="act-btn" id="btnSleepInsideEnd" type="button">退出来</button>
+        <button class="act-btn ghost" id="btnSleepInsideSlight" type="button">轻轻动一下</button>
+        <button class="act-btn ghost" id="btnSleepInsideDeep" type="button">抽插（会弄醒）</button>
+      </div>
+      <p class="hint" id="sleepInsideHint">睡前、半夜醒来、熬夜或活动里都能问；轻轻动不会弄醒，抽插会弄醒。</p>
+    </div>
+    <div class="us-block" id="clothingBlock" hidden>
+      <div class="us-head">
+        <b>衣装</b>
+        <span class="badge tiny" id="clothingBadge" data-tone="muted">—</span>
+        <button class="link-btn" id="btnClothingEditor" type="button">衣柜</button>
+      </div>
+      <p class="us-hint" id="clothingHint"></p>
+      <div class="sleepwear-ask" id="sleepwearAsk" hidden>
+        <span class="hint">今晚要换哪套？</span>
+        <button class="act-btn small" data-action="sleepwear_choose" data-style="pajamas" type="button">睡衣睡裤</button>
+        <button class="act-btn small" data-action="sleepwear_choose" data-style="nightgown" type="button">睡裙</button>
+        <button class="link-btn" data-action="sleepwear_choose" data-style="skip" type="button">今晚不换</button>
+      </div>
+    </div>
+    <div class="us-block" id="birthBlock" hidden>
+      <div class="us-head">
+        <b>生产</b>
+        <span class="badge tiny" id="birthBadge" data-tone="muted">—</span>
+      </div>
+      <div class="meter"><i id="birthFill"></i></div>
+      <p class="us-hint" id="birthHint"></p>
+      <div class="us-actions">
+        <button class="act-btn" id="btnBirthComfort" type="button">安抚一下</button>
+      </div>
+    </div>
+    <div class="us-block" id="condomBlock" hidden>
+      <div class="us-head">
+        <b>避孕套</b>
+        <span class="badge tiny" id="condomBadge" data-tone="muted">—</span>
+        <button class="link-btn" id="btnCondomEditor" type="button">设置</button>
+      </div>
+      <p class="us-hint" id="condomHint"></p>
+      <div class="us-actions">
+        <button class="act-btn" id="btnCondomWear" type="button">戴上</button>
+        <button class="act-btn ghost" id="btnCondomRenew" type="button">重新戴个新的</button>
+        <button class="act-btn ghost" id="btnCondomHelp" type="button">她帮戴</button>
+        <button class="act-btn ghost" id="btnCondomRemove" type="button">脱掉</button>
+        <button class="act-btn ghost" id="btnCondomHelpRemove" type="button">她帮脱</button>
+      </div>
+    </div>
+    <div class="us-block" id="usBlock" hidden>
+      <div class="us-head">
+        <b>插入子宫</b>
+        <span class="badge tiny" id="usBadge" data-tone="muted">—</span>
+        <button class="link-btn" id="btnInsertPrompts" type="button">插入提示词</button>
+        <button class="link-btn" id="btnInsertEditor" type="button">设置</button>
+      </div>
+      <p class="us-hint" id="usHint"></p>
+      <div class="us-actions">
+        <button class="act-btn" id="btnUsEnter" type="button">插进去</button>
+        <button class="act-btn ghost" id="btnUsForce" type="button">强行</button>
+        <button class="act-btn ghost" id="btnUsExit" type="button">退出来</button>
+      </div>
+    </div>
+    <div class="sleep-block" id="sleepBlock">
+      <div class="uterus-head">
+        <span>睡眠</span>
+        <span class="badge tiny" id="sleepBadge" data-tone="muted">未生效</span>
+        <span class="muted" id="sleepNote">睡眠时段里活动时就允许她发言</span>
+        <label class="mini-switch" title="活动撞上睡眠时段时是否暂时允许她发言">
+          <input type="checkbox" id="sleepAllow">
+          <span id="sleepAllowText">允许发言：开</span>
+        </label>
+      </div>
+      <div class="sleep-rows">
+        <label>活动期间宽限 <input class="ue-input tune-input sleep-input" id="sleepGrace" type="number" min="1" max="240" step="1" data-section="sleep" data-key="wake_grace_minutes"> 分钟</label>
+        <label>结束后余韵 <input class="ue-input tune-input sleep-input" id="sleepAfterglow" type="number" min="0" max="240" step="1" data-section="sleep" data-key="afterglow_minutes"> 分钟</label>
+        <button class="link-btn sleep-reset" data-section="sleep" data-key="wake_grace_minutes" type="button">宽限跟随配置</button>
+        <button class="link-btn sleep-reset" data-section="sleep" data-key="afterglow_minutes" type="button">余韵跟随配置</button>
+      </div>
+    </div>
+    <div class="sleep-block" id="surpriseBlock">
+      <div class="uterus-head">
+        <span>突然被弄</span>
+        <span class="badge tiny" id="surpriseBadge" data-tone="muted">未生效</span>
+        <span class="muted" id="surpriseNote">不在活动里点按钮，她会吓一跳</span>
+        <label class="mini-switch" title="不在活动里点按钮时是否让她有反应/主动发消息">
+          <input type="checkbox" id="surpriseOn">
+          <span id="surpriseOnText">反应：开</span>
+        </label>
+        <button class="link-btn" id="btnSurpriseKinds" type="button">反应提示词</button>
+        <button class="link-btn" id="btnSurpriseEditor" type="button">设置</button>
+      </div>
+      <div class="sleep-rows">
+        <label>主动发消息概率 <input class="ue-input tune-input sleep-input" id="surpriseChance" type="number" min="0" max="100" step="1" data-section="surprise" data-key="proactive_chance"> %</label>
+        <label>缓过来要 <input class="ue-input tune-input sleep-input" id="surpriseShock" type="number" min="1" max="240" step="1" data-section="surprise" data-key="shock_minutes"> 分钟</label>
+        <button class="link-btn sleep-reset" data-section="surprise" data-key="proactive_chance" type="button">概率跟随配置</button>
+        <button class="link-btn sleep-reset" data-section="surprise" data-key="shock_minutes" type="button">时间跟随配置</button>
+      </div>
+    </div>
+  </section>
+
+
+
+  <div class="side-stack">
+  <section class="card card-prob">
+    <div class="card-head"><h2>受孕概率</h2><span class="hint" id="probHint">单次体内射精</span></div>
+    <div class="prob-top">
+      <div class="prob-score"><b id="probValue">—</b><span id="probUnit">%</span></div>
+      <div class="prob-tier" id="probTier">—</div>
+    </div>
+    <div class="meter big"><i id="probFill"></i></div>
+    <p class="prob-note" id="probNote">—</p>
+    <ul class="factors" id="factors"></ul>
+  </section>
+  <section class="card card-measure">
+    <div class="card-head"><h2>尺寸与身体</h2>
+      <button class="link-btn" id="btnSizePrompts" type="button">尺寸提示词</button>
+      <span class="hint">改完即生效</span></div>
+    <div class="size-groups">
+      <section class="size-group">
+        <h3>你的尺寸</h3>
+        <div class="size-grid">
+          <label class="tune-item">阴茎长度 cm<input class="tune-input" type="number" min="1" max="100" step="0.5" data-section="size" data-key="penis_length"></label>
+          <label class="tune-item">阴茎粗细 cm<input class="tune-input" type="number" min="0.5" max="50" step="0.1" data-section="size" data-key="penis_girth"></label>
+          <label class="tune-item">阴茎头长度 cm<input class="tune-input" type="number" min="0.5" max="50" step="0.1" data-section="size" data-key="penis_head_length"></label>
+          <label class="tune-item">身高 cm<input class="tune-input" id="ubHeight" type="number" min="50" max="250" step="1"></label>
+          <label class="tune-item">体重 kg<input class="tune-input" id="ubWeight" type="number" min="20" max="300" step="1"></label>
+        </div>
+      </section>
+      <section class="size-group">
+        <h3>她的尺寸</h3>
+        <div class="size-grid">
+          <label class="tune-item">阴道长度 cm<input class="tune-input" type="number" min="1" max="100" step="0.5" data-section="size" data-key="vagina_length"></label>
+          <label class="tune-item">阴道截面大小 cm<input class="tune-input" type="number" min="0.2" max="50" step="0.1" data-section="size" data-key="vagina_width"></label>
+          <label class="tune-item">子宫长度 cm<input class="tune-input" type="number" min="1" max="100" step="0.5" data-section="size" data-key="uterus_length"></label>
+          <label class="tune-item">输卵管直径 cm<input class="tune-input" type="number" min="0.1" max="20" step="0.1" data-section="size" data-key="tube_width"></label>
+          <label class="tune-item">卵巢大小 cm<input class="tune-input" type="number" min="0.1" max="20" step="0.1" data-section="size" data-key="ovary_width"></label>
+          <label class="tune-item">处女膜孔洞大小 cm<input class="tune-input" type="number" min="0.1" max="100" step="0.1" data-section="size" data-key="hymen_hole"></label>
+          <label class="tune-item">处女膜大致深度 cm<input class="tune-input" type="number" min="0.5" max="30" step="0.1" data-section="size" data-key="hymen_depth"></label>
+          <label class="tune-item">胎儿撑长子宫上限 倍<input class="tune-input" type="number" min="1" max="5" step="0.05" data-section="size" data-key="fetus_uterus_max_ratio"></label>
+        </div>
+        <p class="size-note">可进入上限：输卵管 = 输卵管直径；卵巢 = 卵巢大小的一半。</p>
+      </section>
+      <section class="size-group">
+        <h3>高潮反应与提示</h3>
+        <div class="size-grid">
+          <label class="tune-item">接近高潮时阴道缩短 cm<input class="tune-input" type="number" min="0" max="20" step="0.1" data-section="size" data-key="pre_orgasm_shorten"></label>
+          <label class="tune-item">快感到门槛的百分之几开始缩<input class="tune-input" type="number" min="0" max="1" step="0.05" data-section="size" data-key="pre_orgasm_ratio"></label>
+          <label class="tune-item">尺寸提示概率 %<input class="tune-input" type="number" min="0" max="100" step="1" data-section="size" data-key="notice_chance"></label>
+        </div>
+        <p class="size-note">第一次见到阴茎时一定会有反应，不看这个概率；之后尺寸明显变化才按这个概率触发。</p>
+      </section>
+      <section class="size-group">
+        <h3>宫颈临时变长</h3>
+        <div class="size-grid">
+          <label class="tune-item">顶到宫颈时最多临时增加 cm<input class="tune-input" type="number" min="0" max="20" step="0.1" data-section="size" data-key="cervix_stretch_max"></label>
+          <label class="tune-item">达到上限的多少比例后按顶进子宫算<input class="tune-input" type="number" min="0" max="1" step="0.05" data-section="size" data-key="cervix_stretch_ratio"></label>
+          <label class="tune-item">临时增加保持多少分钟<input class="tune-input" type="number" min="1" max="240" step="1" data-section="size" data-key="cervix_stretch_minutes"></label>
+        </div>
+        <p class="size-note">达到比例或真正顶进子宫后，这段临时长度不再计入阴道总长。</p>
+      </section>
+    </div>
+    <p class="hint">阴茎头长度单独算，不叠加到总长；子宫长度和阴道长度分开。插入时用「总长 − 阴道长度」判断头能进去多少，再按头长/子宫长分成四档提示。身高体重用于 Unbirth 的体积换算。</p>
+    <p class="hint" id="sizeUterusHint" hidden></p>
+  </section>
+  <section class="card card-children">
+    <div class="card-head"><h2>孩子</h2><span class="hint" id="childrenCount">0 个</span></div>
+    <div class="children-list" id="childrenList"></div>
+    <p class="empty" id="childrenEmpty" hidden>还没有孩子。出生后会记录在这里，最多留到 20 岁。</p>
+  </section>
+
+  </div>
+
+  <div class="left-stack">
+  <section class="card card-cycle">
+    <div class="card-head"><h2>生理期</h2>
+      <button class="link-btn" id="btnCyclePrompts" type="button">生理期提示词</button>
+      <span class="cycle-prompt-toggle">
+        <span class="hint">提示词：</span>
+        <label class="mini-switch" title="是否把生理期第几天/阶段写进提示词">
+          <input type="checkbox" id="cyclePromptsOn"><span id="cyclePromptsText">开</span>
+        </label>
+      </span>
+      <span class="hint" id="cycleSource">—</span></div>
+    <div class="cycle-top">
+      <div class="cycle-phase" id="cyclePhase">—</div>
+      <div class="cycle-day" id="cycleDay">—</div>
+    </div>
+    <div class="cycle-strip" id="cycleStrip"></div>
+    <div class="cycle-legend" id="cycleLegend"></div>
+    <p class="cycle-note" id="cycleNote">—</p>
+    <div class="cycle-menstrual" id="cycleMenstrual" hidden>
+      <span class="cycle-menses" id="cycleBlood">经血 0 ml</span>
+      <span class="cycle-pad" id="cyclePad">卫生巾：未穿</span>
+      <button class="link-btn" data-action="pad_change" type="button">换卫生巾</button>
+      <button class="link-btn" id="btnMenstrualSettings" type="button">设置</button>
+      <button class="link-btn" id="btnPadUbExit" data-action="pad_unbirth_exit" type="button" hidden>趁换的时候退出来</button>
+      <button class="link-btn" id="btnPadToyReinsert" data-action="pad_toy_reinsert" type="button" hidden>把玩具放回去</button>
+      <span class="cycle-pad-toggle"><span class="hint">卫生巾羞耻到：</span>
+        <input class="cycle-pad-cap tune-input" id="padShameCap" type="number" min="0" max="100" step="1" data-section="menstrual" data-key="pad_shame_cap">
+        <span class="hint">算顶</span>
+      </span>
+    </div>
+  </section>
+
+  <section class="card card-ejaculation">
+    <div class="card-head"><h2>射精</h2><span class="hint">射多少也在这里定</span></div>
+    <label class="tune-item ejac-volume">每次射精量 ml
+      <input class="tune-input" id="ejacVolume" type="number" min="0.1" max="100" step="0.1"
+             data-section="ejaculation" data-key="volume_ml">
+    </label>
+    <div class="actions ejac-actions">
+      <button class="act-btn" data-action="ejaculate" data-mode="vagina" type="button">体内射精</button>
+      <button class="act-btn" data-action="ejaculate" data-mode="anal" type="button">肛内</button>
+      <button class="act-btn" data-action="ejaculate" data-mode="throat" type="button">深喉</button>
+      <button class="act-btn" data-action="ejaculate" data-mode="outside" type="button">体外</button>
+      <button class="act-btn" data-action="ejaculate" data-mode="tube" type="button">输卵管</button>
+    </div>
+    <p class="hint" id="ejacVolumeHint">默认 3 ml，改成多少就按多少灌进去。</p>
+  </section>
+  </div>
+
+
+  <section class="card card-pregnancy">
+    <div class="card-head"><h2>孕期</h2>
+      <button class="link-btn" id="btnPregnancySettings" type="button">孕期设置</button>
+      <button class="link-btn" id="btnBirthEditor" type="button">生产设置</button>
+      <span class="hint" id="pregHint">未怀孕</span></div>
+    <div class="preg-empty" id="pregEmpty">
+      <p>现在没有怀孕。先在「联动数据」里授权、进入场景，推进到最后一步（体内射精）才会掷受孕骰。</p>
+      <button class="act-btn danger-ghost" data-action="force_pregnant" type="button">强制受孕（测试）</button>
+    </div>
+    <div class="preg-body" id="pregBody" hidden>
+      <div class="preg-head">
+        <div class="preg-month"><b id="pregMonth">0</b><span>/ <i id="pregMonths">10</i> 个月</span></div>
+        <div class="preg-stage" id="pregStage">—</div>
+      </div>
+      <div class="meter big"><i id="pregFill"></i></div>
+      <div class="preg-meta">
+        <div><span>第几周</span><b id="pregWeek">—</b></div>
+        <div><span>预产期</span><b id="pregDue">—</b></div>
+        <div><span>还有</span><b id="pregLeft">—</b></div>
+        <div><span>受孕日</span><b id="pregConceived">—</b></div>
+      </div>
+      <div class="preg-badges" id="pregBadges"></div>
+      <p class="preg-note" id="pregNote">—</p>
+      <div class="actions">
+        <button class="act-btn danger-ghost" data-action="reset" data-confirm="1" type="button">重置孕期 / 恢复周期</button>
+      </div>
+    </div>
+    <div class="child-settings">
+      <div class="card-head"><h3>出生后去向</h3><span class="hint">孩子只记背景，不单独对话</span></div>
+      <div class="ue-row">
+        <label for="childCareMode">谁带</label>
+        <select class="ue-input" id="childCareMode">
+          <option value="family">家人带</option>
+          <option value="self">她自己带</option>
+          <option value="nanny">保姆带</option>
+          <option value="adoption">送养</option>
+          <option value="background">纯背景</option>
+        </select>
+      </div>
+      <div class="ue-row">
+        <label for="childInterrupt">自己带时亲密可能被打断</label>
+        <label class="mini-switch"><input type="checkbox" id="childInterrupt"><b id="childInterruptText">开</b></label>
+        <span></span>
+      </div>
+      <div class="ue-row"><label for="childInterruptChance">打断概率 %</label><input class="ue-input tune-input" id="childInterruptChance" type="number" min="0" max="100" step="1" data-section="children" data-key="intimacy_interrupt_chance"><button class="link-btn tune-reset" data-section="children" data-key="intimacy_interrupt_chance" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="childInterruptAge">孩子几岁前会打断</label><input class="ue-input tune-input" id="childInterruptAge" type="number" min="1" max="18" step="1" data-section="children" data-key="intimacy_child_max_age_years"><button class="link-btn tune-reset" data-section="children" data-key="intimacy_child_max_age_years" type="button">跟随配置</button></div>
+    </div>
+    <div class="preg-test">
+      <div class="card-head"><h3>验孕</h3><span class="hint">确认怀没怀</span></div>
+      <div class="preg-test-row">
+        <button class="act-btn" data-action="self_test" type="button">验孕</button>
+        <b class="preg-test-label">验孕棒：</b>
+        <div class="test-stick" id="selfTestStick" data-result="">
+          <div class="test-stick-window"><i></i><i></i></div>
+        </div>
+        <b class="preg-test-result" id="selfTestResult">还没验</b>
+        <span class="hint" id="selfTestBy"></span>
+        <button class="link-btn" id="btnSelfTestNew" data-action="self_test_new_stick" type="button">换个新的</button>
+      </div>
+      <div class="ue-row"><label for="selfTestChance">受孕活动后起念验孕的概率 %</label><input class="ue-input tune-input" id="selfTestChance" type="number" min="0" max="100" step="1" data-section="self_test" data-key="chance"><button class="link-btn tune-reset" data-section="self_test" data-key="chance" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="selfTestMinDelay">活动后至少多少小时才会起念验孕</label><input class="ue-input tune-input" id="selfTestMinDelay" type="number" min="1" max="720" step="1" data-section="self_test" data-key="min_delay_hours"><button class="link-btn tune-reset" data-section="self_test" data-key="min_delay_hours" type="button">跟随配置</button></div>
+    </div>
+  </section>
+
+  <section class="card card-body">
+    <div class="card-head"><h2>身体与避孕</h2><span class="hint" id="bodyHint">处女膜 / 子宫 / 避孕</span></div>
+    <div class="body-grid">
+      <div class="body-block">
+        <div class="body-title">处女膜 <span class="badge tiny" id="hymenLabel">—</span></div>
+        <p class="body-note" id="hymenNote">—</p>
+        <div class="meter"><i id="hymenDamageFill"></i></div>
+        <p class="body-note" id="hymenDamageText">损伤 0 / 100</p>
+        <div class="actions">
+          <button class="act-btn ghost" data-action="hymen_restore" type="button">恢复处女膜</button>
+          <button class="act-btn ghost" id="btnHymenBlood" data-action="hymen_blood_toggle" type="button">处子血：开</button>
+          <button class="act-btn ghost" id="btnHymenPrompts" type="button">提示词</button>
+        </div>
+      </div>
+      <div class="body-block">
+        <div class="body-title">子宫 <b id="uterusBodyMl">0</b><span class="muted"> / <i id="uterusBodyMax">20</i> ml</span>
+          <span class="badge tiny" id="uterusBodyTier">空</span></div>
+        <div class="actions">
+          <button class="act-btn" data-action="expel" type="button">排出子宫里的东西</button>
+          <button class="act-btn ghost" id="btnUterusEditor" type="button">子宫设置</button>
+        </div>
+        <label class="mini-switch" title="装不下时会不会溢出来">
+          <input type="checkbox" id="uterusOverflow">
+          <span id="uterusOverflowText">溢出：开</span>
+        </label>
+        <label class="mini-switch" title="活动结束后会不会渐渐漏出去">
+          <input type="checkbox" id="uterusAfterLeak">
+          <span id="uterusAfterLeakText">结束后漏出：开</span>
+        </label>
+        <p class="body-note" id="uterusNote">怀孕时不会排（拒绝排胎儿）。</p>
+      </div>
+      <div class="body-block">
+        <div class="body-title">避孕</div>
+        <p class="body-note" id="contraNote">—</p>
+        <div class="actions contra-actions">
+          <button class="act-btn" data-action="pill" data-mode="take" type="button">吃避孕药</button>
+          <button class="act-btn ghost" data-action="pill" data-mode="stop" type="button">停</button>
+          <button class="act-btn" data-action="condom" data-enabled="1" type="button">戴套</button>
+          <button class="act-btn ghost" data-action="condom" data-enabled="0" type="button">摘</button>
+        </div>
+        <div class="actions">
+          <label class="mini-switch" title="活动/夜袭前她可能主动吃避孕药">她主动吃避孕药
+            <input type="checkbox" id="pillProactive"><b id="pillProactiveText">开</b>
+          </label>
+          <button class="link-btn" id="btnPillPrompts" type="button">避孕提示词</button>
+          <label class="mini-switch" title="拒绝吃药后仍被内射会加鱼之心责备">拒绝后内射加责备
+            <input type="checkbox" id="pillBlame"><b id="pillBlameText">开</b>
+          </label>
+          <label class="mini-switch" title="一次活动里只责怪/埋怨一次">拒绝后内射加责备且埋怨 只进行一次
+            <input type="checkbox" id="pillBlameOnce"><b id="pillBlameOnceText">开</b>
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card card-succubus">
+    <div class="card-head"><h2>魅魔 <span class="badge tiny" id="succBadge">关</span></h2><span class="hint" id="succHint">淫纹 / 榨取 / 怀孕意愿</span>
+      <button class="act-btn ghost" data-action="succubus_toggle" type="button">开关</button></div>
+    <div class="succ-grid">
+      <div class="succ-block">
+        <span>淫纹等级</span><b id="succLevel">Lv.0</b>
+        <div class="succ-step">
+          <button data-action="succubus_level" data-delta="-1" type="button">−</button>
+          <button data-action="succubus_level" data-delta="1" type="button">＋</button>
+        </div>
+      </div>
+      <div class="succ-block"><span>今日榨取 / 每日上限</span><b id="succUsed">不限</b>
+        <div class="succ-step">
+          <button data-action="succubus_limit" data-delta="-1" type="button">−</button>
+          <button data-action="succubus_limit" data-delta="1" type="button">＋</button>
+        </div>
+      </div>
+      <div class="succ-block"><span>欲望增长</span><b id="succDesire">+0 / 次</b></div>
+      <div class="succ-block"><span>加成倍率</span><b id="succScale">×1.00</b></div>
+      <div class="succ-block"><span>怀孕意愿</span><b id="succWilling">未表态</b></div>
+      <div class="succ-block"><span>魅魔尾巴</span>
+        <label class="mini-switch" title="开着时：角色没尾巴也能用尾巴，而且尾巴按魅魔尾巴算；关掉魅魔后敏感度恢复">
+          <input type="checkbox" id="succTail">
+          <b id="succTailText">关</b>
+        </label>
+      </div>
+    </div>
+    <div class="succ-exp">
+      <div class="succ-exp-head"><span>淫纹经验</span><b id="succExpText">0 / 100</b></div>
+      <div class="meter"><i id="succExpFill"></i></div>
+    </div>
+    <p class="body-note" id="succNote">—</p>
+    <div class="actions">
+      <button class="act-btn" data-action="succubus_willing" data-willing="1" type="button">愿意怀</button>
+      <button class="act-btn ghost" data-action="succubus_willing" data-willing="0" type="button">不愿意怀</button>
+      <button class="act-btn ghost" data-action="succubus_willing" data-willing="" type="button">重置表态</button>
+    </div>
+  </section>
+
+  <section class="card card-tuning">
+    <div class="card-head"><h2>数值细调</h2>
+      <button class="link-btn" id="btnBehaviorPrompts" type="button">行为提示词</button>
+      <button class="link-btn" id="btnTuneFollowConfig" type="button">全部跟随配置</button>
+      <button class="link-btn" id="btnTunePushConfig" type="button">面板值写回配置</button>
+      <span class="hint" id="tuneHint">改完即生效（存 state，覆盖配置默认值）</span></div>
+    <div class="tune-grid">
+      <label class="tune-item">羞耻每小时回落<input class="tune-input" type="number" min="0" max="100" step="1" data-section="mood" data-key="shame_decay_per_hour"></label>
+      <label class="tune-item">欲望每小时回落<input class="tune-input" type="number" min="0" max="100" step="1" data-section="mood" data-key="desire_decay_per_hour"></label>
+      <label class="tune-item">避孕药有效 %<input class="tune-input" type="number" min="0" max="100" step="1" data-section="contraception" data-key="pill_effectiveness"></label>
+      <label class="tune-item">避孕套有效 %<input class="tune-input" type="number" min="0" max="100" step="1" data-section="contraception" data-key="condom_effectiveness"></label>
+      <label class="tune-item">避孕套破裂 %<input class="tune-input" type="number" min="0" max="100" step="1" data-section="contraception" data-key="condom_break_chance"></label>
+      <label class="tune-item">主动吃避孕药概率 %<input class="tune-input" type="number" min="0" max="100" step="1" data-section="contraception" data-key="pill_proactive_chance"></label>
+      <label class="tune-item">吃完/说不吃缓冲 分钟<input class="tune-input" type="number" min="1" max="120" step="1" data-section="contraception" data-key="pill_proactive_window_minutes"></label>
+      <label class="tune-item">主动吃药冷却 分钟<input class="tune-input" type="number" min="0" max="1440" step="1" data-section="contraception" data-key="pill_proactive_cooldown_minutes"></label>
+      <label class="tune-item">主动吃药消息延迟 秒<input class="tune-input" type="number" min="0" max="300" step="1" data-section="contraception" data-key="pill_proactive_delay_seconds"></label>
+      <label class="tune-item">拒绝后内射加责备概率 %<input class="tune-input" type="number" min="0" max="100" step="1" data-section="contraception" data-key="pill_blame_chance"></label>
+      <label class="tune-item">拒绝后内射加多少责备<input class="tune-input" type="number" min="0" max="100" step="0.5" data-section="contraception" data-key="pill_blame_amount"></label>
+      <label class="tune-item">拒绝后多久内内射才算 分钟<input class="tune-input" type="number" min="0" max="1440" step="1" data-section="contraception" data-key="pill_blame_window_minutes"></label>
+      <label class="tune-item">基础吸收 ml/h<input class="tune-input" type="number" min="0" max="100" step="0.1" data-section="uterus" data-key="leak_per_hour"></label>
+      <label class="tune-item">子宫容量 ml<input class="tune-input" type="number" min="1" max="500" step="1" data-section="uterus" data-key="capacity_ml"></label>
+      <label class="tune-item">撑开阈值（0-1）<input class="tune-input" type="number" min="0" max="1" step="0.05" data-section="uterus" data-key="stretch_at"></label>
+      <label class="tune-item">最多撑开（0.35=+35%）<input class="tune-input" type="number" min="0" max="2" step="0.05" data-section="uterus" data-key="stretch_ratio"></label>
+      <label class="tune-item">溢出阈值（0-1）<input class="tune-input" type="number" min="0" max="1" step="0.05" data-section="uterus" data-key="overflow_at"></label>
+      <label class="tune-item">溢出提示 分钟<input class="tune-input" type="number" min="0" max="1440" step="1" data-section="uterus" data-key="overflow_minutes"></label>
+      <label class="tune-item">魅魔吸收倍率<input class="tune-input" type="number" min="1" max="100" step="1" data-section="succubus" data-key="absorption_multiplier"></label>
+      <label class="tune-item">魅魔尾巴敏感度<input class="tune-input" type="number" min="1" max="5" step="0.1" data-section="succubus" data-key="tail_sensitivity_scale"></label>
+      <label class="tune-item">高潮 +PC 精力<input class="tune-input" type="number" min="0" max="100" step="1" data-section="succubus" data-key="pc_energy_gain"></label>
+      <label class="tune-item">高潮 +依恋<input class="tune-input" type="number" min="0" max="100" step="0.1" data-section="succubus" data-key="fish_attachment_gain"></label>
+      <label class="tune-item">高潮 +亲密<input class="tune-input" type="number" min="0" max="100" step="0.1" data-section="succubus" data-key="fish_intimacy_gain"></label>
+      <label class="tune-item">射出 +PC 精力<input class="tune-input" type="number" min="0" max="100" step="1" data-section="succubus" data-key="ejaculation_energy_gain"></label>
+      <label class="tune-item">射出 +依恋<input class="tune-input" type="number" min="0" max="100" step="0.1" data-section="succubus" data-key="ejaculation_attachment_gain"></label>
+      <label class="tune-item">射出 +亲密<input class="tune-input" type="number" min="0" max="100" step="0.1" data-section="succubus" data-key="ejaculation_intimacy_gain"></label>
+      <label class="tune-item">欲望基础/次<input class="tune-input" type="number" min="0" max="100" step="0.1" data-section="succubus" data-key="desire_base_gain"></label>
+      <label class="tune-item">欲望/级<input class="tune-input" type="number" min="0" max="100" step="0.1" data-section="succubus" data-key="desire_gain_per_level"></label>
+      <label class="tune-item">每日榨取上限<input class="tune-input" type="number" min="0" max="100" step="1" data-section="succubus" data-key="daily_limit"></label>
+      <label class="tune-item">每次榨取经验<input class="tune-input" type="number" min="0" max="1000" step="1" data-section="succubus" data-key="exp_gain"></label>
+      <label class="tune-item">每级所需经验<input class="tune-input" type="number" min="1" max="10000" step="1" data-section="succubus" data-key="exp_per_level"></label>
+    </div>
+  </section>
+
+  <section class="card card-zones">
+    <div class="card-head"><h2>敏感点</h2><span class="hint" id="zoneHint">开发度 / 敏感度 / 每次涨幅</span></div>
+    <ul class="zone-list" id="zoneList"></ul>
+    <label class="tune-item">开发度对敏感度增长的加成（0–5）<input class="tune-input" type="number" min="0" max="5" step="0.1" data-section="size" data-key="dev_sens_boost"></label>
+    <label class="tune-item">敏感度对忍耐增长的加成（0–5）<input class="tune-input" type="number" min="0" max="5" step="0.1" data-section="endurance" data-key="sens_boost"></label>
+    <label class="tune-item">敏感度多久不涨开始回落（分钟）<input class="tune-input" type="number" min="0" max="10080" step="10" data-section="zones" data-key="sens_decay_after_minutes"></label>
+    <label class="tune-item">回落速度（每小时）<input class="tune-input" type="number" min="0" max="10" step="0.01" data-section="zones" data-key="sens_decay_per_hour"></label>
+    <p class="empty" id="zoneEmpty" hidden>敏感点系统关着。</p>
+    <div class="edge-step">
+      <span class="edge-step-label">下次寸止门槛加成</span>
+      <button class="step-btn" data-action="edge_step" data-delta="-1" type="button" aria-label="减 1">−</button>
+      <input class="step-input" id="edgeStepInput" type="number" min="0" max="50" step="0.5" value="8" aria-label="门槛加成">
+      <button class="step-btn" data-action="edge_step" data-delta="1" type="button" aria-label="加 1">＋</button>
+      <button class="link-btn" data-action="edge_step" data-reset="1" type="button">跟随配置</button>
+      <span class="edge-step-hint" id="edgeStepHint">之后每次递减</span>
+    </div>
+  </section>
+
+  <section class="card card-subzones">
+    <div class="card-head">
+      <h2>子敏感度 <span class="badge tiny" id="subBadge" data-tone="muted">—</span></h2>
+      <span class="hint" id="subHint">只在受孕活动进行时生效</span>
+    </div>
+    <ul class="subzone-list" id="subZoneList"></ul>
+    <p class="empty" id="subZoneEmpty" hidden>子敏感度关着（配置 sub_zones.enabled）。</p>
+    <p class="subzone-note" id="subZoneNote">—</p>
+    <div class="actions subzone-actions">
+      <button class="act-btn ghost" data-action="sub_zone_reset" type="button">全部清零</button>
+      <button class="act-btn" id="btnZoneKeywords" type="button">部位关键词</button>
+      <button class="act-btn" id="btnPromptEditor" type="button">敏感点阶段性表现设置</button>
+      <span class="subzone-tip">同一条满了会立刻溢出一次，然后几秒内退回 0</span>
+    </div>
+  </section>
+
+  <section class="card card-mood">
+    <div class="card-head">
+      <h2>日常情绪 <span class="badge tiny" id="moodBadge" data-tone="muted">—</span></h2>
+      <span class="hint" id="moodHint">欲望度满了会转成正式场景</span>
+    </div>
+    <ul class="mood-list" id="moodList"></ul>
+    <p class="mood-note" id="moodNote">—</p>
+    <div class="mood-tune">
+      <span class="mood-tune-label">羞耻满时，鱼之心责怪 +</span>
+      <button class="step-btn" data-action="mood_shame_blame" data-delta="-1" type="button" aria-label="减 1">−</button>
+      <input class="step-input" id="shameBlameInput" type="number" min="0" max="100" step="0.5" aria-label="羞耻满时加多少责怪">
+      <button class="step-btn" data-action="mood_shame_blame" data-delta="1" type="button" aria-label="加 1">＋</button>
+      <button class="link-btn" data-action="mood_shame_blame" data-reset="1" type="button">跟随配置</button>
+      <span class="mood-tune-hint" id="shameBlameHint">—</span>
+    </div>
+    <div class="actions">
+      <button class="act-btn ghost" data-action="mood_comfort" data-kind="安慰" type="button">哄一下（安慰）</button>
+      <button class="act-btn ghost" data-action="mood_comfort" data-kind="摸摸头" type="button">摸摸头</button>
+      <button class="act-btn ghost" data-action="mood_comfort" data-kind="亲吻" type="button">亲吻</button>
+      <button class="act-btn ghost" id="btnApology" data-action="mood_apology" type="button">道歉（责怪 −4）</button>
+      <button class="act-btn ghost" id="btnMoodCooldown" type="button">自己贴上来设置</button>
+    </div>
+    <div class="mood-tune" id="moodCooldownPanel" hidden>
+      <label class="mood-tune-label" for="moodCooldownMinutes">活动结束后多久内不自己贴上来</label>
+      <input class="step-input tune-input" id="moodCooldownMinutes" type="number" min="0" max="1440" step="1" data-section="mood" data-key="self_approach_after_scene_minutes">
+      <span class="mood-tune-hint">分钟；0 = 不设冷却，改完即生效</span>
+    </div>
+  </section>
+
+  <section class="card card-special">
+    <div class="card-head"><h2>特别敏感点 <span class="badge tiny" id="specialBadge" data-tone="muted">—</span></h2>
+      <span class="hint" id="specialHint">活动里她这会儿最敏感的地方</span></div>
+    <div class="special-body">
+      <b id="specialZone">—</b>
+      <span class="muted" id="specialLeft">—</span>
+    </div>
+    <p class="now-hint" id="specialNote">—</p>
+    <div class="special-body toy-row">
+      <span class="muted">玩具特别档位</span>
+      <b id="specialToy">—</b>
+      <span class="muted" id="specialToyLeft">—</span>
+    </div>
+    <p class="now-hint" id="specialToyNote">—</p>
+    <div class="actions">
+      <button class="act-btn ghost" data-action="special_reroll" type="button">换一个</button>
+    </div>
+  </section>
+
+  <section class="card card-toys">
+    <div class="card-head"><h2>小玩具</h2>
+      <label class="toy-intensity">强度
+        <select id="toyIntensity" aria-label="玩具强度">
+          <option value="1">轻柔</option>
+          <option value="2" selected>中等</option>
+          <option value="3">强烈</option>
+        </select>
+      </label>
+      <button class="link-btn" id="btnToySettings" type="button">玩具设置</button>
+    </div>
+    <ul class="toy-list" id="toyList"></ul>
+    <p class="empty" id="toyEmpty" hidden>小玩具关着。</p>
+    <p class="toy-note" id="toyNote">用一次只涨快感、不判定受孕；用过会在身上留一段状态。</p>
+  </section>
+
+  <section class="card card-sources">
+    <div class="card-head"><h2>联动数据</h2><span class="hint" id="ownerHint">欲望归属 —</span></div>
+    <div class="source" id="fishSource">
+      <div class="source-head"><span class="dot" id="fishDot"></span><b>鱼之心 · 欲</b><span class="source-state" id="fishState">—</span></div>
+      <div class="meter"><i id="fishFill"></i></div>
+      <p class="source-note" id="fishNote">—</p>
+    </div>
+    <div class="source" id="darkSource">
+      <div class="source-head"><span class="dot" id="darkDot"></span><b>暗涌 · lust</b><span class="source-state" id="darkState">—</span></div>
+      <div class="meter"><i id="darkFill"></i></div>
+      <p class="source-note" id="darkNote">—</p>
+    </div>
+    <div class="actions">
+      <button class="act-btn ghost" data-action="consent" data-enabled="1" type="button">授权 24h</button>
+      <button class="act-btn ghost" data-action="consent" data-enabled="0" type="button">撤掉授权</button>
+      <button class="act-btn ghost" data-action="scene" data-enabled="1" type="button">进入场景</button>
+      <button class="act-btn ghost" data-action="scene" data-enabled="0" type="button">结束场景</button>
+    </div>
+  </section>
+
+  <section class="card card-log">
+    <div class="card-head"><h2>最近事件</h2><span class="hint">她身体上发生了什么</span></div>
+    <ul class="log-list" id="logList"></ul>
+    <p class="empty" id="logEmpty">还没有记录。</p>
+  </section>
+</main>
+
+<section class="editor" id="promptEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnEditorBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>敏感点阶段性表现</h2>
+      <p id="editorHint">子敏感度三段（第1段·初起 / 第2段·发烫 / 第3段·将溢）各有一句提示词，说明是什么部位、她现在是什么感受</p>
+    </div>
+    <span class="badge" id="editorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="editor-body">
+    <nav class="editor-zones" id="editorZones" aria-label="敏感点"></nav>
+    <div class="editor-main">
+      <div class="editor-main-head">
+        <h3 id="editorZoneTitle">—</h3>
+        <span class="editor-zone-meta" id="editorZoneMeta">—</span>
+      </div>
+      <div class="editor-tabs" id="editorTabs" role="tablist"></div>
+      <div class="editor-stages" id="editorStages"></div>
+      <div class="actions editor-actions">
+        <button class="act-btn" id="btnEditorSave" type="button">保存这三段</button>
+        <button class="act-btn ghost" id="btnEditorResetZone" type="button">恢复本部位默认</button>
+        <button class="act-btn ghost" id="btnEditorResetAll" type="button">全部恢复默认</button>
+        <span class="editor-note" id="editorNote">改完自动保存；留空 = 那一段用回内置默认</span>
+      </div>
+    </div>
+  </div>
+  <div class="editor-confirm" id="editorConfirm" hidden>
+    <div class="ec-box" role="dialog" aria-modal="true" aria-labelledby="ecTitle">
+      <h3 id="ecTitle">还有未保存的自定义提示词</h3>
+      <p id="ecText">这段字还没写进 state.json，返回前要先保存吗？</p>
+      <div class="ec-actions">
+        <button class="act-btn" id="ecSave" type="button">保存并返回</button>
+        <button class="act-btn ghost" id="ecDiscard" type="button">不保存返回</button>
+        <button class="act-btn ghost" id="ecCancel" type="button">继续编辑</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="editor" id="zoneKeywordsEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnZoneKeywordsBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>部位关键词</h2>
+      <p>文本里出现这些词时，自动记成对应部位；留空 = 恢复默认</p>
+    </div>
+    <span class="badge" id="zoneKeywordsStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body" id="zoneKeywordRows"></div>
+  <div class="actions editor-actions">
+    <button class="act-btn" id="btnZoneKeywordsSaveAll" type="button">保存全部</button>
+    <span class="editor-note">留空 = 恢复默认；改完点保存</span>
+  </div>
+</section>
+
+<section class="editor" id="uterusEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnUterusBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>子宫设置</h2>
+      <p id="uterusEditorHint">短暂撑开的范围，以及装了不同量时她是什么感觉</p>
+    </div>
+    <span class="badge" id="uterusEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <h3>短暂撑开 <span class="ue-sub" id="ueStretchNote">—</span></h3>
+      <div class="ue-row">
+        <label for="ueStretchAt">撑开阈值（装到多少比例再射会撑）</label>
+        <input class="ue-input" id="ueStretchAt" type="number" min="0" max="1" step="0.05">
+        <button class="link-btn" data-ue-reset="stretch_at" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ueStretchRatio">最多撑开（0.35 = 多装 35%）</label>
+        <input class="ue-input" id="ueStretchRatio" type="number" min="0" max="2" step="0.05">
+        <button class="link-btn" data-ue-reset="stretch_ratio" type="button">跟随配置</button>
+      </div>
+      <p class="ue-note">她现在：<span id="ueNow">—</span></p>
+      <p class="ue-note">不需要"保持多久"了：量降到撑开线以下，撑开就自己收回去。</p>
+    </section>
+
+    <section class="ue-block">
+      <h3>输卵管 / 卵巢 <span class="ue-sub">精液流进卵巢的条件</span></h3>
+      <div class="ue-row">
+        <label for="ueTubeFill">非直射时子宫填满多少 % 才算流进输卵管</label>
+        <input class="ue-input tune-input" id="ueTubeFill" type="number" min="1" max="100" step="1" data-section="unbirth" data-key="tube_fill_percent">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="tube_fill_percent" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ueTubeFlowBase">流进卵巢的基准分钟（2ml 时）</label>
+        <input class="ue-input tune-input" id="ueTubeFlowBase" type="number" min="1" max="240" step="1" data-section="unbirth" data-key="tube_flow_base_minutes">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="tube_flow_base_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ueTubeFlowRef">基准精液量 ml</label>
+        <input class="ue-input tune-input" id="ueTubeFlowRef" type="number" min="0.1" max="100" step="0.1" data-section="unbirth" data-key="tube_flow_ref_ml">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="tube_flow_ref_ml" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ueOvaryProb">流进卵巢后的受孕概率 %</label>
+        <input class="ue-input tune-input" id="ueOvaryProb" type="number" min="0" max="100" step="1" data-section="unbirth" data-key="ovary_prob">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="ovary_prob" type="button">跟随配置</button>
+      </div>
+    </section>
+
+    <section class="ue-block">
+      <h3>结束后漏出 <span class="ue-sub" id="ueAfterLeakNote">—</span></h3>
+      <div class="ue-row">
+        <label for="ueAfterLeak">活动结束后会渐渐漏出去</label>
+        <label class="mini-switch"><input type="checkbox" id="ueAfterLeak"><b id="ueAfterLeakText">开</b></label>
+        <span></span>
+      </div>
+      <div class="ue-row">
+        <label for="ueAfterLeakRate">漏出速度（每小时多少 ml）</label>
+        <input class="ue-input" id="ueAfterLeakRate" type="number" min="0" max="100" step="0.5">
+        <button class="link-btn" data-ue-reset="after_leak_per_hour" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ueAfterLeakUntil">漏到容量的百分之几就停（剩下的慢慢吸收）</label>
+        <input class="ue-input" id="ueAfterLeakUntil" type="number" min="0" max="100" step="1">
+        <button class="link-btn" data-ue-reset="after_leak_until" type="button">跟随配置</button>
+      </div>
+      <p class="ue-note">漏到设定水平以下就不再漏，剩下的交给原有的吸收机制（数值细调里的「吸收/小时」）。</p>
+    </section>
+
+    <section class="ue-block">
+      <h3>充盈提示词（4 段）<span class="ue-sub">装了多少 → 她什么感觉</span></h3>
+      <div class="ue-cards" id="ueFillCards"></div>
+      <div class="actions">
+        <button class="act-btn" id="btnUeSaveFill" type="button">保存充盈四段</button>
+        <button class="act-btn ghost" id="btnUeResetFill" type="button">恢复充盈默认</button>
+      </div>
+    </section>
+
+    <section class="ue-block">
+      <h3>溢出提示词（3 段）<span class="ue-sub">装不下溢出来时她什么感觉</span></h3>
+      <div class="ue-cards" id="ueOverflowCards"></div>
+      <div class="actions">
+        <button class="act-btn" id="btnUeSaveOverflow" type="button">保存溢出三段</button>
+        <button class="act-btn ghost" id="btnUeResetOverflow" type="button">恢复溢出默认</button>
+      </div>
+    </section>
+</section>
+
+<section class="editor" id="tuneEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnTuneBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2 id="tuneEditorTitle">忍耐条设置</h2>
+      <p id="tuneEditorHint">改了立刻生效；「跟随配置」把它改回配置里的默认值</p>
+    </div>
+    <span class="badge" id="tuneEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block" id="ueEnduranceBlock">
+      <h3>高潮忍耐条 <span class="ue-sub" id="ueEnduranceNow">—</span></h3>
+      <div class="ue-row">
+        <label for="teCap">基础条长</label>
+        <input class="ue-input tune-input" id="teCap" type="number" min="1" max="1000" step="1" data-section="endurance" data-key="cap">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="cap" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teGainAt">快感到多少算「忍不住了」（低于它攒得少）</label>
+        <input class="ue-input tune-input" id="teGainAt" type="number" min="0" max="1000" step="1" data-section="endurance" data-key="gain_at">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="gain_at" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teGainLow">快感低时每次攒多少</label>
+        <input class="ue-input tune-input" id="teGainLow" type="number" min="0" max="200" step="0.5" data-section="endurance" data-key="gain_low">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="gain_low" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teGainHigh">快感到位时每次攒多少</label>
+        <input class="ue-input tune-input" id="teGainHigh" type="number" min="0" max="200" step="0.5" data-section="endurance" data-key="gain_high">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="gain_high" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row ue-row-strong">
+        <label for="teGainMultiplier">所有忍耐增加量的最终倍率（1 = 正常）</label>
+        <input class="ue-input tune-input" id="teGainMultiplier" type="number" min="0" max="10" step="0.05" data-section="endurance" data-key="gain_multiplier">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="gain_multiplier" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teComboGrow">每连续一次高潮，条变长多少（0.2 = +20%）</label>
+        <input class="ue-input tune-input" id="teComboGrow" type="number" min="0" max="5" step="0.05" data-section="endurance" data-key="combo_grow">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="combo_grow" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teComboCap">条最长是基础条长的几倍</label>
+        <input class="ue-input tune-input" id="teComboCap" type="number" min="1" max="20" step="0.1" data-section="endurance" data-key="combo_cap">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="combo_cap" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teResetMinutes">多久没高潮就缩回基础长度（分钟）</label>
+        <input class="ue-input tune-input" id="teResetMinutes" type="number" min="0" max="1440" step="1" data-section="endurance" data-key="reset_minutes">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="reset_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teIdleMinutes">多久没被碰才开始回落（分钟）</label>
+        <input class="ue-input tune-input" id="teIdleMinutes" type="number" min="0" max="1440" step="1" data-section="endurance" data-key="idle_minutes">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="idle_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teDecayPerHour">回落速度（每小时掉多少）</label>
+        <input class="ue-input tune-input" id="teDecayPerHour" type="number" min="0" max="500" step="0.5" data-section="endurance" data-key="decay_per_hour">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="decay_per_hour" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teAutoEdge">忍耐满了多久没高潮自动算寸止（分钟）</label>
+        <input class="ue-input tune-input" id="teAutoEdge" type="number" min="0" max="240" step="1" data-section="edge" data-key="auto_full_minutes">
+        <button class="link-btn tune-reset" data-section="edge" data-key="auto_full_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teOrgasmMinutes">高潮持续提示多久（分钟）</label>
+        <input class="ue-input tune-input" id="teOrgasmMinutes" type="number" min="1" max="240" step="1" data-section="orgasm" data-key="minutes">
+        <button class="link-btn tune-reset" data-section="orgasm" data-key="minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="tePostOrgasm">高潮后余韵持续多久（分钟）</label>
+        <input class="ue-input tune-input" id="tePostOrgasm" type="number" min="0" max="120" step="1" data-section="pleasure" data-key="post_orgasm_minutes">
+        <button class="link-btn tune-reset" data-section="pleasure" data-key="post_orgasm_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="actions">
+        <button class="act-btn ghost" data-action="endurance_reset" type="button">清空忍耐条</button>
+      </div>
+    </section>
+
+    <section class="ue-block">
+      <h3>快感条回落 <span class="ue-sub">多久没被碰才开始掉、掉多快</span></h3>
+      <div class="ue-row">
+        <label for="tePleasureIdle">多久没被碰才开始回落（分钟）</label>
+        <input class="ue-input tune-input" id="tePleasureIdle" type="number" min="0" max="1440" step="1" data-section="pleasure" data-key="idle_minutes">
+        <button class="link-btn tune-reset" data-section="pleasure" data-key="idle_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="tePleasureDecay">回落速度（每小时掉多少）</label>
+        <input class="ue-input tune-input" id="tePleasureDecay" type="number" min="0" max="500" step="0.5" data-section="pleasure" data-key="decay_per_hour">
+        <button class="link-btn tune-reset" data-section="pleasure" data-key="decay_per_hour" type="button">跟随配置</button>
+      </div>
+    </section>
+
+    <section class="ue-block">
+      <h3>忍耐条分段提示词（4 段）<span class="ue-sub">条到多少 → 她什么感觉</span></h3>
+      <div class="ue-row">
+        <label for="teLevel1">第 2 段起点（占条长 %）</label>
+        <input class="ue-input tune-input" id="teLevel1" type="number" min="0" max="100" step="1" data-section="endurance" data-key="level_at_1">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="level_at_1" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teLevel2">第 3 段起点（%）</label>
+        <input class="ue-input tune-input" id="teLevel2" type="number" min="0" max="100" step="1" data-section="endurance" data-key="level_at_2">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="level_at_2" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teLevel3">第 4 段起点（%）</label>
+        <input class="ue-input tune-input" id="teLevel3" type="number" min="0" max="100" step="1" data-section="endurance" data-key="level_at_3">
+        <button class="link-btn tune-reset" data-section="endurance" data-key="level_at_3" type="button">跟随配置</button>
+      </div>
+      <div class="ue-cards" id="teEnduranceCards"></div>
+      <div class="actions">
+        <button class="act-btn" id="btnTeSaveEndurance" type="button">保存这四段</button>
+        <button class="act-btn ghost" id="btnTeResetEndurance" type="button">恢复默认</button>
+      </div>
+    </section>
+
+    <section class="ue-block" id="ueToysBlock">
+      <h3>她主动用玩具 <span class="ue-sub">开关 / 概率 / 条件</span></h3>
+      <div class="ue-row">
+        <label for="toySelfUse">她可以主动用玩具</label>
+        <label class="mini-switch"><input type="checkbox" id="toySelfUse"><b id="toySelfUseText">开</b></label>
+        <span></span>
+      </div>
+      <div class="ue-row"><label for="teSelfChance">触发概率 %</label><input class="ue-input tune-input" id="teSelfChance" type="number" min="0" max="100" step="1" data-section="toys" data-key="self_use_chance"><button class="link-btn tune-reset" data-section="toys" data-key="self_use_chance" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="teSelfCheck">每隔多少分钟检查一次</label><input class="ue-input tune-input" id="teSelfCheck" type="number" min="1" max="1440" step="1" data-section="toys" data-key="self_use_check_minutes"><button class="link-btn tune-reset" data-section="toys" data-key="self_use_check_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="teSelfCool">冷却分钟</label><input class="ue-input tune-input" id="teSelfCool" type="number" min="0" max="1440" step="1" data-section="toys" data-key="self_use_cooldown_minutes"><button class="link-btn tune-reset" data-section="toys" data-key="self_use_cooldown_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="teSelfDesire">最低欲望</label><input class="ue-input tune-input" id="teSelfDesire" type="number" min="0" max="100" step="1" data-section="toys" data-key="self_use_min_desire"><button class="link-btn tune-reset" data-section="toys" data-key="self_use_min_desire" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="teSelfWet">最低湿润</label><input class="ue-input tune-input" id="teSelfWet" type="number" min="0" max="100" step="1" data-section="toys" data-key="self_use_min_wet"><button class="link-btn tune-reset" data-section="toys" data-key="self_use_min_wet" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="teSelfLewd">最低淫乱度</label><input class="ue-input tune-input" id="teSelfLewd" type="number" min="0" max="100" step="1" data-section="toys" data-key="self_use_min_lewd"><button class="link-btn tune-reset" data-section="toys" data-key="self_use_min_lewd" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="teSelfCtrl">把控制器递给主人概率 %</label><input class="ue-input tune-input" id="teSelfCtrl" type="number" min="0" max="100" step="1" data-section="toys" data-key="self_use_controller_chance"><button class="link-btn tune-reset" data-section="toys" data-key="self_use_controller_chance" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="teSelfDelay">主动消息延迟秒</label><input class="ue-input tune-input" id="teSelfDelay" type="number" min="0" max="300" step="1" data-section="toys" data-key="self_use_delay_seconds"><button class="link-btn tune-reset" data-section="toys" data-key="self_use_delay_seconds" type="button">跟随配置</button></div>
+      <h3>日常小玩具 <span class="ue-sub">玩具/档位能加多少</span></h3>
+      <div class="ue-row">
+        <label for="teToyEndurance">用一次玩具额外攒多少忍耐</label>
+        <input class="ue-input tune-input" id="teToyEndurance" type="number" min="0" max="200" step="0.5" data-section="toys" data-key="endurance_gain">
+        <button class="link-btn tune-reset" data-section="toys" data-key="endurance_gain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgSoftAttach">筋膜枪·手脚等：加依恋</label>
+        <input class="ue-input tune-input" id="teMgSoftAttach" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_soft_attachment">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_soft_attachment" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgSoftIntimacy">筋膜枪·手脚等：加亲密</label>
+        <input class="ue-input tune-input" id="teMgSoftIntimacy" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_soft_intimacy">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_soft_intimacy" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgSoftDesire">筋膜枪·手脚等：加欲望</label>
+        <input class="ue-input tune-input" id="teMgSoftDesire" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_soft_desire">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_soft_desire" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgBodyPleasure">筋膜枪·小腹/乳房等：加快感</label>
+        <input class="ue-input tune-input" id="teMgBodyPleasure" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_body_pleasure">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_body_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgBodyDesire">筋膜枪·小腹/乳房等：加欲望</label>
+        <input class="ue-input tune-input" id="teMgBodyDesire" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_body_desire">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_body_desire" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgBodyWet">筋膜枪·小腹/乳房等：加湿润</label>
+        <input class="ue-input tune-input" id="teMgBodyWet" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_body_wet">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_body_wet" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgBodyEndurance">筋膜枪·小腹/乳房等：加忍耐</label>
+        <input class="ue-input tune-input" id="teMgBodyEndurance" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_body_endurance">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_body_endurance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgHotPleasure">筋膜枪·外阴/阴蒂等：加快感</label>
+        <input class="ue-input tune-input" id="teMgHotPleasure" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_hot_pleasure">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_hot_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgHotDesire">筋膜枪·外阴/阴蒂等：加欲望</label>
+        <input class="ue-input tune-input" id="teMgHotDesire" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_hot_desire">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_hot_desire" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgHotWet">筋膜枪·外阴/阴蒂等：加湿润</label>
+        <input class="ue-input tune-input" id="teMgHotWet" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_hot_wet">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_hot_wet" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teMgHotEndurance">筋膜枪·外阴/阴蒂等：加忍耐</label>
+        <input class="ue-input tune-input" id="teMgHotEndurance" type="number" min="0" max="100" step="0.5" data-section="toys" data-key="mg_hot_endurance">
+        <button class="link-btn tune-reset" data-section="toys" data-key="mg_hot_endurance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teSpecialChance">日常撞上「特别敏感档位」的概率 %</label>
+        <input class="ue-input tune-input" id="teSpecialChance" type="number" min="0" max="100" step="1" data-section="special" data-key="daily_chance">
+        <button class="link-btn tune-reset" data-section="special" data-key="daily_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teSpecialPleasure">撞上时多涨的快感</label>
+        <input class="ue-input tune-input" id="teSpecialPleasure" type="number" min="0" max="200" step="0.5" data-section="special" data-key="daily_pleasure">
+        <button class="link-btn tune-reset" data-section="special" data-key="daily_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teSpecialEndurance">撞上时多攒的忍耐</label>
+        <input class="ue-input tune-input" id="teSpecialEndurance" type="number" min="0" max="200" step="0.5" data-section="special" data-key="daily_endurance">
+        <button class="link-btn tune-reset" data-section="special" data-key="daily_endurance" type="button">跟随配置</button>
+      </div>
+    </section>
+
+    <section class="ue-block">
+      <h3>特别敏感点 <span class="ue-sub">活动里碰到它多涨多少</span></h3>
+      <div class="ue-row">
+        <label for="teRotateTimer">到点会自己换一处（关掉就只在被碰 / 手动换时变）</label>
+        <label class="mini-switch"><input type="checkbox" id="teRotateTimer"><b id="teRotateTimerText">开</b></label>
+        <span></span>
+      </div>
+      <div class="ue-row">
+        <label for="teSpecialEvery">多久换一处（分钟）</label>
+        <input class="ue-input tune-input" id="teSpecialEvery" type="number" min="1" max="720" step="1" data-section="special" data-key="every_minutes">
+        <button class="link-btn tune-reset" data-section="special" data-key="every_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teSpecialJitter">到点时间浮动 ±%（0 = 每次准时）</label>
+        <input class="ue-input tune-input" id="teSpecialJitter" type="number" min="0" max="100" step="1" data-section="special" data-key="jitter_percent">
+        <button class="link-btn tune-reset" data-section="special" data-key="jitter_percent" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teSpecialBonusPleasure">碰到时多涨的快感</label>
+        <input class="ue-input tune-input" id="teSpecialBonusPleasure" type="number" min="0" max="200" step="0.5" data-section="special" data-key="pleasure_bonus">
+        <button class="link-btn tune-reset" data-section="special" data-key="pleasure_bonus" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="teSpecialBonusEndurance">碰到时多攒的忍耐</label>
+        <input class="ue-input tune-input" id="teSpecialBonusEndurance" type="number" min="0" max="200" step="0.5" data-section="special" data-key="endurance_bonus">
+        <button class="link-btn tune-reset" data-section="special" data-key="endurance_bonus" type="button">跟随配置</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="lewdEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnLewdBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>淫乱度 / 夜袭</h2>
+      <p>淫乱度：场景和日常积累，久了会退；高了会自己推欲望和湿润。夜袭：PC 熬夜 + 欲望/湿润够高时可能半夜摸过来</p>
+    </div>
+    <span class="badge" id="lewdStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <h3>淫乱度</h3>
+      <div class="ue-row"><label for="leMax">上限</label><input class="ue-input tune-input" id="leMax" type="number" min="1" max="1000" step="1" data-section="lewd" data-key="max"><button class="link-btn tune-reset" data-section="lewd" data-key="max" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leScene">每次受孕场景加多少</label><input class="ue-input tune-input" id="leScene" type="number" min="0" max="100" step="0.5" data-section="lewd" data-key="scene_add"><button class="link-btn tune-reset" data-section="lewd" data-key="scene_add" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leDaily">每次日常小场景加多少</label><input class="ue-input tune-input" id="leDaily" type="number" min="0" max="100" step="0.5" data-section="lewd" data-key="daily_add"><button class="link-btn tune-reset" data-section="lewd" data-key="daily_add" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leTick">每隔多少分钟涨一次</label><input class="ue-input tune-input" id="leTick" type="number" min="1" max="1440" step="1" data-section="lewd" data-key="tick_minutes"><button class="link-btn tune-reset" data-section="lewd" data-key="tick_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leMin">高于多少才自动涨</label><input class="ue-input tune-input" id="leMin" type="number" min="0" max="100" step="0.5" data-section="lewd" data-key="tick_min"><button class="link-btn tune-reset" data-section="lewd" data-key="tick_min" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leCost">每次自动涨消耗多少</label><input class="ue-input tune-input" id="leCost" type="number" min="0" max="100" step="0.5" data-section="lewd" data-key="cost_per_tick"><button class="link-btn tune-reset" data-section="lewd" data-key="cost_per_tick" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leDesire">每次涨多少欲望</label><input class="ue-input tune-input" id="leDesire" type="number" min="0" max="100" step="0.5" data-section="lewd" data-key="desire_per_tick"><button class="link-btn tune-reset" data-section="lewd" data-key="desire_per_tick" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leWet">每次涨多少湿润</label><input class="ue-input tune-input" id="leWet" type="number" min="0" max="100" step="0.5" data-section="lewd" data-key="wet_per_tick"><button class="link-btn tune-reset" data-section="lewd" data-key="wet_per_tick" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leDecayAfter">多久没增长后回退（分钟）</label><input class="ue-input tune-input" id="leDecayAfter" type="number" min="0" max="10080" step="1" data-section="lewd" data-key="decay_after_minutes"><button class="link-btn tune-reset" data-section="lewd" data-key="decay_after_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leDecay">回退速度 / 小时</label><input class="ue-input tune-input" id="leDecay" type="number" min="0" max="100" step="0.5" data-section="lewd" data-key="decay_per_hour"><button class="link-btn tune-reset" data-section="lewd" data-key="decay_per_hour" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="lePromptMin">低于多少不显示淫乱度提示</label><input class="ue-input tune-input" id="lePromptMin" type="number" min="0" max="100" step="1" data-section="lewd" data-key="prompt_min"><button class="link-btn tune-reset" data-section="lewd" data-key="prompt_min" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leLevel2">第2段阈值 %</label><input class="ue-input tune-input" id="leLevel2" type="number" min="0" max="100" step="1" data-section="lewd" data-key="level_at_2"><button class="link-btn tune-reset" data-section="lewd" data-key="level_at_2" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leLevel3">第3段阈值 %</label><input class="ue-input tune-input" id="leLevel3" type="number" min="0" max="100" step="1" data-section="lewd" data-key="level_at_3"><button class="link-btn tune-reset" data-section="lewd" data-key="level_at_3" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="leLevel4">第4段阈值 %</label><input class="ue-input tune-input" id="leLevel4" type="number" min="0" max="100" step="1" data-section="lewd" data-key="level_at_4"><button class="link-btn tune-reset" data-section="lewd" data-key="level_at_4" type="button">跟随配置</button></div>
+    </section>
+    <section class="ue-block">
+      <h3>夜袭</h3>
+      <div class="ue-row"><label for="nrStart">起始小时</label><input class="ue-input tune-input" id="nrStart" type="number" min="0" max="23" step="1" data-section="night_raid" data-key="start_hour"><button class="link-btn tune-reset" data-section="night_raid" data-key="start_hour" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrEnd">结束小时</label><input class="ue-input tune-input" id="nrEnd" type="number" min="0" max="23" step="1" data-section="night_raid" data-key="end_hour"><button class="link-btn tune-reset" data-section="night_raid" data-key="end_hour" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrVeryHigh">欲望到多少算非常想要</label><input class="ue-input tune-input" id="nrVeryHigh" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="very_high_desire"><button class="link-btn tune-reset" data-section="night_raid" data-key="very_high_desire" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrVeryWet">非常想要至少多湿</label><input class="ue-input tune-input" id="nrVeryWet" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="very_high_wet_min"><button class="link-btn tune-reset" data-section="night_raid" data-key="very_high_wet_min" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrVeryBonus">非常想要时夜袭 + 点</label><input class="ue-input tune-input" id="nrVeryBonus" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="very_high_bonus"><button class="link-btn tune-reset" data-section="night_raid" data-key="very_high_bonus" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrDesire">欲望至少多少</label><input class="ue-input tune-input" id="nrDesire" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="desire_min"><button class="link-btn tune-reset" data-section="night_raid" data-key="desire_min" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrWet">湿润至少多少</label><input class="ue-input tune-input" id="nrWet" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="wet_min"><button class="link-btn tune-reset" data-section="night_raid" data-key="wet_min" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrChance">夜袭概率 %</label><input class="ue-input tune-input" id="nrChance" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="chance"><button class="link-btn tune-reset" data-section="night_raid" data-key="chance" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrPregChance">孕期夜袭概率 %</label><input class="ue-input tune-input" id="nrPregChance" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="pregnancy_chance"><button class="link-btn tune-reset" data-section="night_raid" data-key="pregnancy_chance" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrActivityWindow">最近活动回看多少分钟</label><input class="ue-input tune-input" id="nrActivityWindow" type="number" min="1" max="1440" step="1" data-section="night_raid" data-key="activity_window_minutes"><button class="link-btn tune-reset" data-section="night_raid" data-key="activity_window_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrAfterEjac">射过后压低持续多少分钟</label><input class="ue-input tune-input" id="nrAfterEjac" type="number" min="0" max="1440" step="1" data-section="night_raid" data-key="after_ejac_minutes"><button class="link-btn tune-reset" data-section="night_raid" data-key="after_ejac_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrAfterFactor">射过后夜袭概率 ×（0.2 = 20%）</label><input class="ue-input tune-input" id="nrAfterFactor" type="number" min="0" max="1" step="0.05" data-section="night_raid" data-key="after_ejac_factor"><button class="link-btn tune-reset" data-section="night_raid" data-key="after_ejac_factor" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrUnfinished">没射没高潮后提高持续多少分钟</label><input class="ue-input tune-input" id="nrUnfinished" type="number" min="0" max="1440" step="1" data-section="night_raid" data-key="unfinished_minutes"><button class="link-btn tune-reset" data-section="night_raid" data-key="unfinished_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrUnfinishedBonus">没射没高潮后概率 +多少点</label><input class="ue-input tune-input" id="nrUnfinishedBonus" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="unfinished_bonus"><button class="link-btn tune-reset" data-section="night_raid" data-key="unfinished_bonus" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrLead">提前多少分钟显示预估</label><input class="ue-input tune-input" id="nrLead" type="number" min="0" max="180" step="1" data-section="night_raid" data-key="lead_minutes"><button class="link-btn tune-reset" data-section="night_raid" data-key="lead_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrAfterglow">夜袭结束后余韵多少分钟</label><input class="ue-input tune-input" id="nrAfterglow" type="number" min="0" max="120" step="1" data-section="night_raid" data-key="afterglow_minutes"><button class="link-btn tune-reset" data-section="night_raid" data-key="afterglow_minutes" type="button">跟随配置</button></div>
+    <div class="ue-row"><label for="nrAfterScene">活动结束后多久内不再夜袭（分钟）</label><input class="ue-input tune-input" id="nrAfterScene" type="number" min="0" max="1440" step="1" data-section="night_raid" data-key="after_scene_minutes"><button class="link-btn tune-reset" data-section="night_raid" data-key="after_scene_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrWait">等回应多少分钟</label><input class="ue-input tune-input" id="nrWait" type="number" min="1" max="120" step="1" data-section="night_raid" data-key="wait_minutes"><button class="link-btn tune-reset" data-section="night_raid" data-key="wait_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrCool">冷却小时</label><input class="ue-input tune-input" id="nrCool" type="number" min="0" max="168" step="1" data-section="night_raid" data-key="cooldown_hours"><button class="link-btn tune-reset" data-section="night_raid" data-key="cooldown_hours" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrPer">每点淫乱度加多少熬夜概率 %</label><input class="ue-input tune-input" id="nrPer" type="number" min="0" max="100" step="0.1" data-section="night_raid" data-key="lewd_late_per_point"><button class="link-btn tune-reset" data-section="night_raid" data-key="lewd_late_per_point" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrFishBonus">每点淫乱度加多少鱼之心熬夜概率 %</label><input class="ue-input tune-input" id="nrFishBonus" type="number" min="0" max="100" step="0.1" data-section="night_raid" data-key="fish_stay_up_bonus"><button class="link-btn tune-reset" data-section="night_raid" data-key="fish_stay_up_bonus" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrMax">熬夜概率上限 %</label><input class="ue-input tune-input" id="nrMax" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="lewd_late_max"><button class="link-btn tune-reset" data-section="night_raid" data-key="lewd_late_max" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="nrPcStay">启用 PC 熬夜条件</label><label class="mini-switch"><input type="checkbox" id="nrPcStay"><b id="nrPcStayText">开</b></label><span></span></div>
+      <div class="ue-row"><label for="nrFishStay">启用鱼之心熬夜条件</label><label class="mini-switch"><input type="checkbox" id="nrFishStay"><b id="nrFishStayText">开</b></label><span></span></div>
+      <div class="ue-row"><label for="nrEnergy">夜袭触发加多少精力</label><input class="ue-input tune-input" id="nrEnergy" type="number" min="0" max="100" step="1" data-section="night_raid" data-key="energy_gain"><button class="link-btn tune-reset" data-section="night_raid" data-key="energy_gain" type="button">跟随配置</button></div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="wetnessEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnWetnessBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>湿润度设置</h2>
+      <p id="wetnessEditorHint">一直有效（不在活动里也算）；改了立刻生效</p>
+    </div>
+    <span class="badge" id="wetnessEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <h3>基础与涨落 <span class="ue-sub" id="weNow">—</span></h3>
+      <div class="ue-row">
+        <label for="weBaseFloat">基础湿润度随「鱼之心欲 / 快感 / 忍耐」浮动</label>
+        <label class="mini-switch" title="开着时基础会随欲/快感/忍耐上浮，关掉就固定在基础值">
+          <input type="checkbox" id="weBaseFloat">
+          <span id="weBaseFloatText">开</span>
+        </label>
+      </div>
+      <div class="ue-row">
+        <label for="weBase">基础湿润度（回落到底就是这里）</label>
+        <input class="ue-input tune-input" id="weBase" type="number" min="0" max="100" step="1" data-section="wetness" data-key="base">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="base" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="wePromptLevel">日常聊天至少几档才提（1 微湿 / 2 湿 / 3 很湿 / 4 湿透）</label>
+        <input class="ue-input tune-input" id="wePromptLevel" type="number" min="1" max="4" step="1" data-section="wetness" data-key="prompt_min_level">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="prompt_min_level" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weSceneStep">活动每步额外加湿润</label>
+        <input class="ue-input tune-input" id="weSceneStep" type="number" min="0" max="100" step="0.1" data-section="wetness" data-key="scene_step_gain">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="scene_step_gain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weDailyStep">日常小活动每步额外加湿润</label>
+        <input class="ue-input tune-input" id="weDailyStep" type="number" min="0" max="100" step="0.1" data-section="wetness" data-key="daily_step_gain">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="daily_step_gain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weBfDesire">浮动比例：「欲」满时 +多少</label>
+        <input class="ue-input tune-input" id="weBfDesire" type="number" min="0" max="100" step="0.5" data-section="wetness" data-key="base_float_desire">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="base_float_desire" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weBfPleasure">浮动比例：快感满时 +多少</label>
+        <input class="ue-input tune-input" id="weBfPleasure" type="number" min="0" max="100" step="0.5" data-section="wetness" data-key="base_float_pleasure">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="base_float_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weBfEndurance">浮动比例：忍耐满时 +多少</label>
+        <input class="ue-input tune-input" id="weBfEndurance" type="number" min="0" max="100" step="0.5" data-section="wetness" data-key="base_float_endurance">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="base_float_endurance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weBfCap">浮动的上限（最多 +多少）</label>
+        <input class="ue-input tune-input" id="weBfCap" type="number" min="0" max="100" step="0.5" data-section="wetness" data-key="base_float_cap">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="base_float_cap" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weGainTouch">被碰一下涨多少</label>
+        <input class="ue-input tune-input" id="weGainTouch" type="number" min="0" max="100" step="0.5" data-section="wetness" data-key="gain_per_touch">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="gain_per_touch" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weGainPleasure">快感每涨 1 点涨多少</label>
+        <input class="ue-input tune-input" id="weGainPleasure" type="number" min="0" max="10" step="0.05" data-section="wetness" data-key="gain_per_pleasure">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="gain_per_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weIdle">多久没被碰才开始落（分钟）</label>
+        <input class="ue-input tune-input" id="weIdle" type="number" min="0" max="1440" step="1" data-section="wetness" data-key="idle_minutes">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="idle_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weDecay">回落速度（每小时掉多少）</label>
+        <input class="ue-input tune-input" id="weDecay" type="number" min="0" max="500" step="1" data-section="wetness" data-key="decay_per_hour">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="decay_per_hour" type="button">跟随配置</button>
+      </div>
+    </section>
+
+    <section class="ue-block">
+      <h3>分段提示词（4 段）<span class="ue-sub">湿到多少 → 她什么感觉</span></h3>
+      <div class="ue-row">
+        <label for="weLevel1">第 2 段起点</label>
+        <input class="ue-input tune-input" id="weLevel1" type="number" min="0" max="100" step="1" data-section="wetness" data-key="level_at_1">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="level_at_1" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weLevel2">第 3 段起点</label>
+        <input class="ue-input tune-input" id="weLevel2" type="number" min="0" max="100" step="1" data-section="wetness" data-key="level_at_2">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="level_at_2" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weLevel3">第 4 段起点</label>
+        <input class="ue-input tune-input" id="weLevel3" type="number" min="0" max="100" step="1" data-section="wetness" data-key="level_at_3">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="level_at_3" type="button">跟随配置</button>
+      </div>
+      <div class="ue-cards" id="weCards"></div>
+      <div class="actions">
+        <button class="act-btn" id="btnWeSave" type="button">保存这四段</button>
+        <button class="act-btn ghost" id="btnWeReset" type="button">恢复默认</button>
+      </div>
+    </section>
+
+    <section class="ue-block">
+      <h3>破处减痛 <span class="ue-sub">湿润度和快感都够 → 第一次没那么疼</span></h3>
+      <div class="ue-row">
+        <label for="wePainWet">湿润度达到多少算「够湿」</label>
+        <input class="ue-input tune-input" id="wePainWet" type="number" min="0" max="100" step="1" data-section="wetness" data-key="pain_wetness_at">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="pain_wetness_at" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="wePainPleasure">快感达到多少算「够兴奋」</label>
+        <input class="ue-input tune-input" id="wePainPleasure" type="number" min="0" max="100" step="1" data-section="wetness" data-key="pain_pleasure_at">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="pain_pleasure_at" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="wePainRelief">两个都够时疼痛降低多少 %（100 = 完全不疼）</label>
+        <input class="ue-input tune-input" id="wePainRelief" type="number" min="0" max="100" step="5" data-section="wetness" data-key="pain_relief">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="pain_relief" type="button">跟随配置</button>
+      </div>
+      <p class="ue-note">处女膜还没破时才生效；破的时候按这两个阈值判断，疼痛分成「正常 / 只疼一下 / 几乎没疼」。</p>
+    </section>
+
+    <section class="ue-block">
+      <h3>鱼之心「欲」 <span class="ue-sub" id="weFishNow">—</span></h3>
+      <div class="ue-row">
+        <label for="weFishWrite">湿润度上涨时同步加鱼之心「欲」</label>
+        <label class="mini-switch"><input type="checkbox" id="weFishWrite"><b id="weFishWriteText">开</b></label>
+        <span></span>
+      </div>
+      <div class="ue-row">
+        <label for="weFishGain">每次上涨给「欲」加多少</label>
+        <input class="ue-input tune-input" id="weFishGain" type="number" min="0" max="100" step="0.5" data-section="wetness" data-key="fish_desire_gain">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="fish_desire_gain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weFishScale">「欲」越高湿润度涨得越快（0.3 = 最多 +30%）</label>
+        <input class="ue-input tune-input" id="weFishScale" type="number" min="0" max="10" step="0.05" data-section="wetness" data-key="fish_desire_scale">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="fish_desire_scale" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weFishToWet">「欲」每涨 1 点，湿润度也涨多少</label>
+        <input class="ue-input tune-input" id="weFishToWet" type="number" min="0" max="100" step="0.1" data-section="wetness" data-key="fish_desire_to_wet">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="fish_desire_to_wet" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="weFishThrottle">湿润度补涨最短间隔（分钟，0 = 不限）</label>
+        <input class="ue-input tune-input" id="weFishThrottle" type="number" min="0" max="1440" step="1" data-section="wetness" data-key="fish_desire_min_minutes">
+        <button class="link-btn tune-reset" data-section="wetness" data-key="fish_desire_min_minutes" type="button">跟随配置</button>
+      </div>
+      <p class="ue-note">鱼之心没装 / 没觉醒欲望时这一段不起作用（只显示「—」）。</p>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="surpriseEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnSurpriseBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>突然被弄</h2>
+      <p id="surpriseEditorHint">不在活动里点面板按钮时：她会惊、慌，可能主动发消息；过一会儿反应过来会害羞</p>
+    </div>
+    <span class="badge" id="surpriseEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <h3>反应与概率 <span class="ue-sub" id="surpriseNow">—</span></h3>
+      <div class="ue-row">
+        <label for="seChance">她主动发消息的概率 %</label>
+        <input class="ue-input tune-input" id="seChance" type="number" min="0" max="100" step="1" data-section="surprise" data-key="proactive_chance">
+        <button class="link-btn tune-reset" data-section="surprise" data-key="proactive_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="seDelay">延迟几秒再发</label>
+        <input class="ue-input tune-input" id="seDelay" type="number" min="0" max="300" step="1" data-section="surprise" data-key="proactive_delay_seconds">
+        <button class="link-btn tune-reset" data-section="surprise" data-key="proactive_delay_seconds" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="seShock">多久之内算「还没缓过来」（分钟）</label>
+        <input class="ue-input tune-input" id="seShock" type="number" min="1" max="240" step="1" data-section="surprise" data-key="shock_minutes">
+        <button class="link-btn tune-reset" data-section="surprise" data-key="shock_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="seRemember">多久之内还记得这件事（分钟）</label>
+        <input class="ue-input tune-input" id="seRemember" type="number" min="1" max="1440" step="1" data-section="surprise" data-key="remember_minutes">
+        <button class="link-btn tune-reset" data-section="surprise" data-key="remember_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="stage-card">
+        <div class="stage-head">
+          <b>主动消息内容</b><span class="stage-badge">留空 = 内置短句 · {kind} 替换类型</span>
+        </div>
+        <textarea class="stage-text" id="seMessage" rows="3" placeholder="……你、你刚才是不是偷偷碰我了？"></textarea>
+      </div>
+      <div class="actions">
+        <button class="act-btn" id="btnSeSaveMessage" type="button">保存</button>
+      </div>
+    </section>
+
+    <section class="ue-block">
+      <h3>两段提示词 <span class="ue-sub">惊 / 反应过来之后</span></h3>
+      <div class="ue-cards" id="seCards"></div>
+      <div class="actions">
+        <button class="act-btn" id="btnSeSave" type="button">保存这两段</button>
+        <button class="act-btn ghost" id="btnSeReset" type="button">恢复默认</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="behaviorEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnBehaviorBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>行为提示词</h2>
+      <p id="behaviorHint">按组改：没动过的都跟随内置默认</p>
+    </div>
+    <button class="act-btn" id="btnBehaviorKeywords" type="button" hidden>关键词设置</button>
+    <span class="badge" id="behaviorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <div class="ue-row">
+        <label for="bpGroup">提示词组</label>
+        <select class="ue-input" id="bpGroup"></select>
+        <span class="muted" id="bpGroupNote">—</span>
+      </div>
+      <div class="ue-cards" id="bpCards"></div>
+      <div class="actions">
+        <button class="act-btn" id="btnBpSave" type="button">保存这一组</button>
+        <button class="act-btn ghost" id="btnBpReset" type="button">恢复这一组默认</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="keywordEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnKeywordBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2 id="keywordTitle">关键词设置</h2>
+      <p id="keywordHint">只填词，逗号分隔</p>
+    </div>
+    <button class="act-btn" id="btnKeywordSave" type="button">保存关键词</button>
+    <span class="badge" id="keywordStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block" id="kwClothingFields" hidden>
+      <div class="stage-card">
+        <div class="stage-head"><b>脱下内裤关键词</b><span class="stage-badge">逗号分隔</span></div>
+        <textarea class="stage-text" id="bpRemoveUnderwearWords" rows="3" placeholder="脱内裤, 脱下内裤, 扒内裤, 把内裤脱"></textarea>
+        <p class="hint">默认：脱内裤、脱下内裤、扒内裤、把内裤脱</p>
+      </div>
+      <div class="stage-card">
+        <div class="stage-head"><b>穿上内裤关键词</b><span class="stage-badge">逗号分隔</span></div>
+        <textarea class="stage-text" id="bpWearUnderwearWords" rows="3" placeholder="穿内裤, 穿上内裤, 换内裤"></textarea>
+        <p class="hint">默认：穿内裤、穿上内裤、换内裤</p>
+      </div>
+    </section>
+    <section class="ue-block" id="kwPillFields" hidden>
+      <div class="stage-card">
+        <div class="stage-head"><b>取消 / 拒绝吃药</b><span class="stage-badge">逗号分隔</span></div>
+        <textarea class="stage-text" id="pillCancelKeywords" rows="3"></textarea>
+      </div>
+      <div class="stage-card">
+        <div class="stage-head"><b>确认吃药</b><span class="stage-badge">逗号分隔</span></div>
+        <textarea class="stage-text" id="pillTakeKeywords" rows="3"></textarea>
+      </div>
+      <div class="stage-card">
+        <div class="stage-head"><b>答应不内射</b><span class="stage-badge">逗号分隔</span></div>
+        <textarea class="stage-text" id="pillPromiseKeywords" rows="3"></textarea>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="asmrEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnAsmrBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>ASMR 助眠设置</h2>
+      <p>计时、收益上限、羞耻衰减、PC 睡眠压力减免</p>
+    </div>
+    <button class="link-btn" id="btnAsmrEditorPrompts" type="button">助眠提示词</button>
+    <span class="badge" id="asmrEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <h3>开关</h3>
+      <div class="ue-row">
+        <label for="asmrEnabled">启用 ASMR 助眠</label>
+        <label class="mini-switch"><input type="checkbox" id="asmrEnabled"><b id="asmrEnabledText">开</b></label>
+        <span></span>
+      </div>
+      <div class="ue-row">
+        <label for="asmrRequestEnabled">她夜里可以主动请求</label>
+        <label class="mini-switch"><input type="checkbox" id="asmrRequestEnabled"><b id="asmrRequestText">开</b></label>
+        <span></span>
+      </div>
+      <div class="ue-row"><label for="asmrReqStart">请求时段：从几点开始</label><input class="ue-input tune-input" id="asmrReqStart" type="number" min="0" max="23" step="1" data-section="asmr" data-key="request_start_hour"><button class="link-btn tune-reset" data-section="asmr" data-key="request_start_hour" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrReqEnd">到几点结束（可跨零点）</label><input class="ue-input tune-input" id="asmrReqEnd" type="number" min="0" max="23" step="1" data-section="asmr" data-key="request_end_hour"><button class="link-btn tune-reset" data-section="asmr" data-key="request_end_hour" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrDurationTune">默认助眠分钟</label><input class="ue-input tune-input" id="asmrDurationTune" type="number" min="1" max="240" step="1" data-section="asmr" data-key="default_minutes"><button class="link-btn tune-reset" data-section="asmr" data-key="default_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrExtendTune">每次续分钟</label><input class="ue-input tune-input" id="asmrExtendTune" type="number" min="1" max="120" step="1" data-section="asmr" data-key="extend_minutes"><button class="link-btn tune-reset" data-section="asmr" data-key="extend_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrMaxTune">单次最长分钟</label><input class="ue-input tune-input" id="asmrMaxTune" type="number" min="1" max="240" step="1" data-section="asmr" data-key="max_minutes"><button class="link-btn tune-reset" data-section="asmr" data-key="max_minutes" type="button">跟随配置</button></div>
+    </section>
+    <section class="ue-block">
+      <h3>收益 / 上限</h3>
+      <div class="ue-row"><label for="asmrReliefTune">每次提高 PC 睡眠压力</label><input class="ue-input tune-input" id="asmrReliefTune" type="number" min="0" max="100" step="0.5" data-section="asmr" data-key="sleep_relief"><button class="link-btn tune-reset" data-section="asmr" data-key="sleep_relief" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrReliefCap">单次睡眠压力提升上限</label><input class="ue-input tune-input" id="asmrReliefCap" type="number" min="0" max="200" step="1" data-section="asmr" data-key="sleep_relief_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="sleep_relief_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrSleepDailyCap">每 24 小时最多提高睡眠压力</label><input class="ue-input tune-input" id="asmrSleepDailyCap" type="number" min="0" max="200" step="1" data-section="asmr" data-key="sleep_relief_daily_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="sleep_relief_daily_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrIntimacy">每次加亲密</label><input class="ue-input tune-input" id="asmrIntimacy" type="number" min="0" max="100" step="0.1" data-section="asmr" data-key="intimacy_gain"><button class="link-btn tune-reset" data-section="asmr" data-key="intimacy_gain" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrIntimacyCap">单次亲密上限</label><input class="ue-input tune-input" id="asmrIntimacyCap" type="number" min="0" max="100" step="0.1" data-section="asmr" data-key="intimacy_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="intimacy_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrAttachment">每次加依恋</label><input class="ue-input tune-input" id="asmrAttachment" type="number" min="0" max="100" step="0.1" data-section="asmr" data-key="attachment_gain"><button class="link-btn tune-reset" data-section="asmr" data-key="attachment_gain" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrAttachmentCap">单次依恋上限</label><input class="ue-input tune-input" id="asmrAttachmentCap" type="number" min="0" max="100" step="0.1" data-section="asmr" data-key="attachment_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="attachment_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrEarGain">每次加耳朵敏感</label><input class="ue-input tune-input" id="asmrEarGain" type="number" min="0" max="1" step="0.005" data-section="asmr" data-key="ear_sens_gain"><button class="link-btn tune-reset" data-section="asmr" data-key="ear_sens_gain" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrEarCap">单次耳朵敏感上限</label><input class="ue-input tune-input" id="asmrEarCap" type="number" min="0" max="2" step="0.01" data-section="asmr" data-key="ear_sens_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="ear_sens_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrPleasure">每次加快感</label><input class="ue-input tune-input" id="asmrPleasure" type="number" min="0" max="100" step="0.5" data-section="asmr" data-key="pleasure_gain"><button class="link-btn tune-reset" data-section="asmr" data-key="pleasure_gain" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrPleasureCap">单次快感上限</label><input class="ue-input tune-input" id="asmrPleasureCap" type="number" min="0" max="100" step="0.5" data-section="asmr" data-key="pleasure_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="pleasure_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrEndurance">每次加忍耐</label><input class="ue-input tune-input" id="asmrEndurance" type="number" min="0" max="100" step="0.5" data-section="asmr" data-key="endurance_gain"><button class="link-btn tune-reset" data-section="asmr" data-key="endurance_gain" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrEnduranceCap">单次忍耐上限</label><input class="ue-input tune-input" id="asmrEnduranceCap" type="number" min="0" max="100" step="0.5" data-section="asmr" data-key="endurance_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="endurance_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrShame">首次加羞耻</label><input class="ue-input tune-input" id="asmrShame" type="number" min="0" max="100" step="0.5" data-section="asmr" data-key="shame_gain"><button class="link-btn tune-reset" data-section="asmr" data-key="shame_gain" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrShameCap">单次羞耻上限</label><input class="ue-input tune-input" id="asmrShameCap" type="number" min="0" max="100" step="0.5" data-section="asmr" data-key="shame_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="shame_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrShameDecay">每次助眠羞耻衰减</label><input class="ue-input tune-input" id="asmrShameDecay" type="number" min="0" max="10" step="0.1" data-section="asmr" data-key="shame_decay_per_session"><button class="link-btn tune-reset" data-section="asmr" data-key="shame_decay_per_session" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrShameFloor">羞耻增益下限</label><input class="ue-input tune-input" id="asmrShameFloor" type="number" min="0" max="100" step="0.1" data-section="asmr" data-key="shame_floor"><button class="link-btn tune-reset" data-section="asmr" data-key="shame_floor" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrWet">每次加湿润</label><input class="ue-input tune-input" id="asmrWet" type="number" min="0" max="100" step="0.1" data-section="asmr" data-key="wet_gain"><button class="link-btn tune-reset" data-section="asmr" data-key="wet_gain" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrWetCap">单次湿润上限</label><input class="ue-input tune-input" id="asmrWetCap" type="number" min="0" max="100" step="0.5" data-section="asmr" data-key="wet_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="wet_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrPregRelief">孕期每次缓解不适</label><input class="ue-input tune-input" id="asmrPregRelief" type="number" min="0" max="100" step="1" data-section="asmr" data-key="pregnancy_relief"><button class="link-btn tune-reset" data-section="asmr" data-key="pregnancy_relief" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrPregCap">孕期缓解上限</label><input class="ue-input tune-input" id="asmrPregCap" type="number" min="0" max="100" step="1" data-section="asmr" data-key="pregnancy_relief_cap"><button class="link-btn tune-reset" data-section="asmr" data-key="pregnancy_relief_cap" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrSleepChance">结束时已经睡着的概率 %</label><input class="ue-input tune-input" id="asmrSleepChance" type="number" min="0" max="100" step="1" data-section="asmr" data-key="sleep_chance"><button class="link-btn tune-reset" data-section="asmr" data-key="sleep_chance" type="button">跟随配置</button></div>
+    </section>
+    <section class="ue-block">
+      <h3>助眠关键词 <span class="ue-sub">她听到这些词就知道你会助眠</span></h3>
+      <div class="stage-card">
+        <div class="stage-head"><b>她会记住的助眠关键词</b><span class="stage-badge">逗号分隔</span></div>
+        <textarea class="stage-text" id="asmrKnownKeywords" rows="3"></textarea>
+        <div class="actions"><button class="act-btn" id="btnAsmrKeywordsSave" type="button">保存关键词</button></div>
+      </div>
+    </section>
+    <section class="ue-block">
+      <h3>夜里的请求</h3>
+      <div class="ue-row"><label for="asmrReqChance">请求概率 %</label><input class="ue-input tune-input" id="asmrReqChance" type="number" min="0" max="100" step="1" data-section="asmr" data-key="request_chance"><button class="link-btn tune-reset" data-section="asmr" data-key="request_chance" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="asmrReqWait">等回应分钟</label><input class="ue-input tune-input" id="asmrReqWait" type="number" min="1" max="120" step="1" data-section="asmr" data-key="request_wait_minutes"><button class="link-btn tune-reset" data-section="asmr" data-key="request_wait_minutes" type="button">跟随配置</button></div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="clothingEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnClothingBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>衣柜</h2>
+      <p id="clothingEditorHint">点一件穿上；点已经穿着的就脱下来；点「不穿」也会走脱衣耗时</p>
+    </div>
+    <button class="act-btn clothing-prompt-btn" id="btnClothingPrompts" type="button">衣装提示词</button>
+    <span class="badge" id="clothingEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <div class="clothing-slots" id="clothingSlots"></div>
+      <p class="ue-note">连衣裙和下装冲突；内裤没脱不能直接插入，但可以隔着衣物。</p>
+    </section>
+    <section class="ue-block">
+      <h3>衣装数值 <span class="ue-sub">脱衣加多少 / 羞耻上限</span></h3>
+      <div class="ue-row"><label for="clRemoveShame">脱衣加羞耻</label><input class="ue-input tune-input" id="clRemoveShame" type="number" min="0" max="100" step="0.5" data-section="clothing" data-key="remove_shame"><button class="link-btn tune-reset" data-section="clothing" data-key="remove_shame" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="clRemoveShameMax">脱衣加羞耻上限</label><input class="ue-input tune-input" id="clRemoveShameMax" type="number" min="0" max="100" step="0.5" data-section="clothing" data-key="remove_shame_max"><button class="link-btn tune-reset" data-section="clothing" data-key="remove_shame_max" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="clRemoveDesire">脱衣加欲望</label><input class="ue-input tune-input" id="clRemoveDesire" type="number" min="0" max="100" step="0.5" data-section="clothing" data-key="remove_desire"><button class="link-btn tune-reset" data-section="clothing" data-key="remove_desire" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="clWearRelief">穿上减羞耻</label><input class="ue-input tune-input" id="clWearRelief" type="number" min="0" max="100" step="0.5" data-section="clothing" data-key="wear_shame_relief"><button class="link-btn tune-reset" data-section="clothing" data-key="wear_shame_relief" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="clChangeMinutes">换衣服耗时（分钟）</label><input class="ue-input tune-input" id="clChangeMinutes" type="number" min="0" max="60" step="1" data-section="clothing" data-key="change_minutes"><button class="link-btn tune-reset" data-section="clothing" data-key="change_minutes" type="button">跟随配置</button></div>
+<div class="ue-row"><label for="clUndressMinutes">脱衣服耗时（分钟）</label><input class="ue-input tune-input" id="clUndressMinutes" type="number" min="0" max="60" step="1" data-section="clothing" data-key="undress_minutes"><button class="link-btn tune-reset" data-section="clothing" data-key="undress_minutes" type="button">跟随配置</button></div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="swallowEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnSwallowBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>吞精设置</h2>
+      <p id="swallowEditorHint">加的值都可以改，改完即生效</p>
+    </div>
+    <button class="link-btn" id="btnSwallowPrompts" type="button">吞精提示词</button>
+    <span class="badge" id="swallowEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <div class="ue-row">
+        <label for="swAuto">她会自主选择收集 / 吞下去</label>
+        <label class="mini-switch" title="外射或射在嘴里后，她自己决定要不要收集和吞">
+          <input type="checkbox" id="swAuto">
+          <span id="swAutoText">开</span>
+        </label>
+      </div>
+      <div class="ue-row">
+        <label for="swAutoChance">自主收集概率 %</label>
+        <input class="ue-input tune-input" id="swAutoChance" type="number" min="0" max="100" step="1" data-section="swallow" data-key="auto_chance">
+        <button class="link-btn tune-reset" data-section="swallow" data-key="auto_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="swAutoSwallow">收集后直接吞的概率 %</label>
+        <input class="ue-input tune-input" id="swAutoSwallow" type="number" min="0" max="100" step="1" data-section="swallow" data-key="auto_swallow_chance">
+        <button class="link-btn tune-reset" data-section="swallow" data-key="auto_swallow_chance" type="button">跟随配置</button>
+      </div>
+    </section>
+    <section class="ue-block">
+      <h3>收集时加</h3>
+      <div class="ue-row">
+        <label for="swCollectPleasure">快感</label>
+        <input class="ue-input tune-input" id="swCollectPleasure" type="number" min="0" max="100" step="0.5" data-section="swallow" data-key="collect_pleasure">
+        <button class="link-btn tune-reset" data-section="swallow" data-key="collect_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="swCollectDesire">欲望</label>
+        <input class="ue-input tune-input" id="swCollectDesire" type="number" min="0" max="100" step="0.5" data-section="swallow" data-key="desire_gain">
+        <button class="link-btn tune-reset" data-section="swallow" data-key="desire_gain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="swCollectWet">湿润</label>
+        <input class="ue-input tune-input" id="swCollectWet" type="number" min="0" max="100" step="0.5" data-section="swallow" data-key="wet_gain">
+        <button class="link-btn tune-reset" data-section="swallow" data-key="wet_gain" type="button">跟随配置</button>
+      </div>
+    </section>
+    <section class="ue-block">
+      <h3>吞下去时加</h3>
+      <div class="ue-row">
+        <label for="swSwallowPleasure">快感</label>
+        <input class="ue-input tune-input" id="swSwallowPleasure" type="number" min="0" max="100" step="0.5" data-section="swallow" data-key="swallow_pleasure">
+        <button class="link-btn tune-reset" data-section="swallow" data-key="swallow_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="swSwallowDesire">欲望</label>
+        <input class="ue-input tune-input" id="swSwallowDesire" type="number" min="0" max="100" step="0.5" data-section="swallow" data-key="swallow_desire">
+        <button class="link-btn tune-reset" data-section="swallow" data-key="swallow_desire" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="swSwallowWet">湿润</label>
+        <input class="ue-input tune-input" id="swSwallowWet" type="number" min="0" max="100" step="0.5" data-section="swallow" data-key="swallow_wet">
+        <button class="link-btn tune-reset" data-section="swallow" data-key="swallow_wet" type="button">跟随配置</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="squirtEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnSquirtBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>潮吹设置</h2>
+      <p id="squirtEditorHint">回充、喷量、概率、加成都能改</p>
+    </div>
+    <span class="badge" id="squirtEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <h3>水量</h3>
+      <div class="ue-row">
+        <label for="sqWaterMax">水量条上限</label>
+        <input class="ue-input tune-input" id="sqWaterMax" type="number" min="1" max="1000" step="1" data-section="squirt" data-key="water_max">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="water_max" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqRegen">每分钟回充</label>
+        <input class="ue-input tune-input" id="sqRegen" type="number" min="0" max="100" step="0.5" data-section="squirt" data-key="regen_per_minute">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="regen_per_minute" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqMinWater">低于多少不喷</label>
+        <input class="ue-input tune-input" id="sqMinWater" type="number" min="0" max="1000" step="1" data-section="squirt" data-key="min_water">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="min_water" type="button">跟随配置</button>
+      </div>
+    </section>
+    <section class="ue-block">
+      <h3>喷发与概率</h3>
+      <div class="ue-row">
+        <label for="sqVolume">基础喷量</label>
+        <input class="ue-input tune-input" id="sqVolume" type="number" min="0" max="500" step="0.5" data-section="squirt" data-key="volume">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="volume" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqVolPleasure">快感对喷量的加成</label>
+        <input class="ue-input tune-input" id="sqVolPleasure" type="number" min="0" max="10" step="0.05" data-section="squirt" data-key="volume_pleasure">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="volume_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqVolEndurance">忍耐对喷量的加成</label>
+        <input class="ue-input tune-input" id="sqVolEndurance" type="number" min="0" max="10" step="0.05" data-section="squirt" data-key="volume_endurance">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="volume_endurance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqComboVolume">每次连续额外喷量</label>
+        <input class="ue-input tune-input" id="sqComboVolume" type="number" min="0" max="10" step="0.05" data-section="squirt" data-key="combo_volume">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="combo_volume" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqCost">每单位喷量耗多少水</label>
+        <input class="ue-input tune-input" id="sqCost" type="number" min="0" max="10" step="0.05" data-section="squirt" data-key="cost_ratio">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="cost_ratio" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqChance">基础概率 %</label>
+        <input class="ue-input tune-input" id="sqChance" type="number" min="0" max="100" step="1" data-section="squirt" data-key="chance">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqPBonus">快感概率加成 %</label>
+        <input class="ue-input tune-input" id="sqPBonus" type="number" min="0" max="100" step="1" data-section="squirt" data-key="pleasure_bonus">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="pleasure_bonus" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqEBonus">忍耐概率加成 %</label>
+        <input class="ue-input tune-input" id="sqEBonus" type="number" min="0" max="100" step="1" data-section="squirt" data-key="endurance_bonus">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="endurance_bonus" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqAfter">上次潮吹后的加成 %</label>
+        <input class="ue-input tune-input" id="sqAfter" type="number" min="0" max="100" step="1" data-section="squirt" data-key="after_bonus">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="after_bonus" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqComboBonus">每次连续的概率加成 %</label>
+        <input class="ue-input tune-input" id="sqComboBonus" type="number" min="0" max="100" step="1" data-section="squirt" data-key="combo_bonus">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="combo_bonus" type="button">跟随配置</button>
+      </div>
+    </section>
+    <section class="ue-block">
+      <h3>喷完的加成</h3>
+      <div class="ue-row">
+        <label for="sqPleasure">喷完加快感</label>
+        <input class="ue-input tune-input" id="sqPleasure" type="number" min="0" max="100" step="0.5" data-section="squirt" data-key="pleasure_gain">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="pleasure_gain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqPCap">喷完加快感的上限</label>
+        <input class="ue-input tune-input" id="sqPCap" type="number" min="0" max="100" step="0.5" data-section="squirt" data-key="pleasure_cap">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="pleasure_cap" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqWet">喷完加湿润</label>
+        <input class="ue-input tune-input" id="sqWet" type="number" min="0" max="100" step="0.5" data-section="squirt" data-key="wet_gain">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="wet_gain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="sqEndurance">喷完加忍耐</label>
+        <input class="ue-input tune-input" id="sqEndurance" type="number" min="0" max="100" step="0.5" data-section="squirt" data-key="endurance_gain">
+        <button class="link-btn tune-reset" data-section="squirt" data-key="endurance_gain" type="button">跟随配置</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="condomEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnCondomBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>避孕套设置</h2>
+      <p id="condomEditorHint">破裂、感觉、帮戴的概率与加成都能改</p>
+    </div>
+    <span class="badge" id="condomEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <div class="ue-row">
+        <label for="cdBreak">每次动作破裂概率 %</label>
+        <input class="ue-input tune-input" id="cdBreak" type="number" min="0" max="100" step="0.5" data-section="condom" data-key="break_per_action">
+        <button class="link-btn tune-reset" data-section="condom" data-key="break_per_action" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdAsk">她问要不要帮戴的概率 %</label>
+        <input class="ue-input tune-input" id="cdAsk" type="number" min="0" max="100" step="1" data-section="condom" data-key="ask_chance">
+        <button class="link-btn tune-reset" data-section="condom" data-key="ask_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdRenewAsk">重新戴个新的时，她问帮戴的概率 %</label>
+        <input class="ue-input tune-input" id="cdRenewAsk" type="number" min="0" max="100" step="1" data-section="condom" data-key="renew_ask_chance">
+        <button class="link-btn tune-reset" data-section="condom" data-key="renew_ask_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdRemoveAsk">戴一会儿后她想脱掉的概率 %</label>
+        <input class="ue-input tune-input" id="cdRemoveAsk" type="number" min="0" max="100" step="1" data-section="condom" data-key="remove_ask_chance">
+        <button class="link-btn tune-reset" data-section="condom" data-key="remove_ask_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdRemoveHelp">她想脱时自己动手的概率 %</label>
+        <input class="ue-input tune-input" id="cdRemoveHelp" type="number" min="0" max="100" step="1" data-section="condom" data-key="remove_help_chance">
+        <button class="link-btn tune-reset" data-section="condom" data-key="remove_help_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdRemoveMin">刚戴上多少分钟内不提脱</label>
+        <input class="ue-input tune-input" id="cdRemoveMin" type="number" min="1" max="240" step="1" data-section="condom" data-key="remove_min_minutes">
+        <button class="link-btn tune-reset" data-section="condom" data-key="remove_min_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdRemoveCool">提出脱后的冷却分钟</label>
+        <input class="ue-input tune-input" id="cdRemoveCool" type="number" min="1" max="1440" step="1" data-section="condom" data-key="remove_cooldown_minutes">
+        <button class="link-btn tune-reset" data-section="condom" data-key="remove_cooldown_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdUnfeltP">快感到多少可能没感觉</label>
+        <input class="ue-input tune-input" id="cdUnfeltP" type="number" min="0" max="100" step="1" data-section="condom" data-key="unfelt_pleasure">
+        <button class="link-btn tune-reset" data-section="condom" data-key="unfelt_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdUnfeltE">忍耐到多少可能没感觉</label>
+        <input class="ue-input tune-input" id="cdUnfeltE" type="number" min="0" max="100" step="1" data-section="condom" data-key="unfelt_endurance">
+        <button class="link-btn tune-reset" data-section="condom" data-key="unfelt_endurance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdUnfeltC">没感觉的概率 %</label>
+        <input class="ue-input tune-input" id="cdUnfeltC" type="number" min="0" max="100" step="1" data-section="condom" data-key="unfelt_chance">
+        <button class="link-btn tune-reset" data-section="condom" data-key="unfelt_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdChange">感觉到后想换新的概率 %</label>
+        <input class="ue-input tune-input" id="cdChange" type="number" min="0" max="100" step="1" data-section="condom" data-key="change_ask_chance">
+        <button class="link-btn tune-reset" data-section="condom" data-key="change_ask_chance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdDesire">她帮戴加欲望</label>
+        <input class="ue-input tune-input" id="cdDesire" type="number" min="0" max="100" step="0.5" data-section="condom" data-key="help_desire">
+        <button class="link-btn tune-reset" data-section="condom" data-key="help_desire" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdShame">她帮戴加羞耻</label>
+        <input class="ue-input tune-input" id="cdShame" type="number" min="0" max="100" step="0.5" data-section="condom" data-key="help_shame">
+        <button class="link-btn tune-reset" data-section="condom" data-key="help_shame" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="cdWet">她帮戴加湿润</label>
+        <input class="ue-input tune-input" id="cdWet" type="number" min="0" max="100" step="0.5" data-section="condom" data-key="help_wet">
+        <button class="link-btn tune-reset" data-section="condom" data-key="help_wet" type="button">跟随配置</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="unbirthEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnUnbirthBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title">
+      <h2>Unbirth 设置</h2>
+      <p id="unbirthEditorHint">缩小比例、容量、扩张、生出的数值</p>
+    </div>
+    <span class="badge" id="unbirthEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <h3>她主动请求让你进入 <span class="ue-sub">总开关关着时不会请求</span></h3>
+      <div class="ue-row">
+        <label for="ubRequest">她可以主动请求让你进入</label>
+        <label class="mini-switch"><input type="checkbox" id="ubRequest"><b id="ubRequestText">开</b></label>
+        <button class="link-btn" id="btnUnbirthRequestPrompts" type="button">请求提示词</button>
+      </div>
+      <div class="ue-row"><label for="ubReqChance">请求概率 %</label><input class="ue-input tune-input" id="ubReqChance" type="number" min="0" max="100" step="1" data-section="unbirth" data-key="request_chance"><button class="link-btn tune-reset" data-section="unbirth" data-key="request_chance" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="ubReqCheck">每隔多少分钟检查一次</label><input class="ue-input tune-input" id="ubReqCheck" type="number" min="1" max="1440" step="1" data-section="unbirth" data-key="request_check_minutes"><button class="link-btn tune-reset" data-section="unbirth" data-key="request_check_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="ubReqCool">冷却分钟</label><input class="ue-input tune-input" id="ubReqCool" type="number" min="0" max="1440" step="1" data-section="unbirth" data-key="request_cooldown_minutes"><button class="link-btn tune-reset" data-section="unbirth" data-key="request_cooldown_minutes" type="button">跟随配置</button></div>
+      <div class="ue-row"><label for="ubReqWait">等回应分钟</label><input class="ue-input tune-input" id="ubReqWait" type="number" min="1" max="120" step="1" data-section="unbirth" data-key="request_wait_minutes"><button class="link-btn tune-reset" data-section="unbirth" data-key="request_wait_minutes" type="button">跟随配置</button></div>
+    </section>
+    <section class="ue-block">
+      <div class="ue-row">
+        <label for="ubShrink">缩小机默认比例</label>
+        <input class="ue-input tune-input" id="ubShrink" type="number" min="0.01" max="1" step="0.01" data-section="unbirth" data-key="shrink_ratio">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="shrink_ratio" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubLimit">子宫极限体积倍率</label>
+        <input class="ue-input tune-input" id="ubLimit" type="number" min="0.1" max="5" step="0.1" data-section="unbirth" data-key="limit_factor">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="limit_factor" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubSmall">少量扩张的占比</label>
+        <input class="ue-input tune-input" id="ubSmall" type="number" min="0" max="1" step="0.05" data-section="unbirth" data-key="expand_small">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="expand_small" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubMid">大量扩张的占比</label>
+        <input class="ue-input tune-input" id="ubMid" type="number" min="0" max="1" step="0.05" data-section="unbirth" data-key="expand_mid">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="expand_mid" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubPleasure">钻进去加快感</label>
+        <input class="ue-input tune-input" id="ubPleasure" type="number" min="0" max="100" step="0.5" data-section="unbirth" data-key="enter_pleasure">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="enter_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubEndurance">钻进去加忍耐</label>
+        <input class="ue-input tune-input" id="ubEndurance" type="number" min="0" max="100" step="0.5" data-section="unbirth" data-key="enter_endurance">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="enter_endurance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubWet">钻进去加湿润</label>
+        <input class="ue-input tune-input" id="ubWet" type="number" min="0" max="100" step="0.5" data-section="unbirth" data-key="enter_wet">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="enter_wet" type="button">跟随配置</button>
+      </div>
+      <div class="stage-card">
+        <div class="stage-head">
+          <b>逆着来关键词</b><span class="stage-badge">逗号分隔</span>
+        </div>
+        <textarea class="stage-text" id="ubResistWords" rows="2" placeholder="逆着来, 按回去, 塞回去"></textarea>
+      </div>
+      <div class="actions">
+        <button class="act-btn" id="btnUbResistWordsSave" type="button">保存关键词</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubGiveup">连续失败几次后放弃</label>
+        <input class="ue-input tune-input" id="ubGiveup" type="number" min="1" max="20" step="1" data-section="unbirth" data-key="birth_giveup_after">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="birth_giveup_after" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubBirthMin">小于多少比例就生不出来</label>
+        <input class="ue-input tune-input" id="ubBirthMin" type="number" min="0.01" max="1" step="0.01" data-section="unbirth" data-key="birth_min_ratio">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="birth_min_ratio" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubBirthDiff">出生难度（越大越难）</label>
+        <input class="ue-input tune-input" id="ubBirthDiff" type="number" min="0" max="100" step="1" data-section="unbirth" data-key="birth_difficulty">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="birth_difficulty" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubTube2">射输卵管·头几乎全进：受孕 %</label>
+        <input class="ue-input tune-input" id="ubTube2" type="number" min="0" max="100" step="1" data-section="unbirth" data-key="tube_stage2">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="tube_stage2" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubTube3">射输卵管·整个头进：受孕 %</label>
+        <input class="ue-input tune-input" id="ubTube3" type="number" min="0" max="100" step="1" data-section="unbirth" data-key="tube_stage3">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="tube_stage3" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubTube4">射输卵管·插满：受孕 %</label>
+        <input class="ue-input tune-input" id="ubTube4" type="number" min="0" max="100" step="1" data-section="unbirth" data-key="tube_stage4">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="tube_stage4" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubTubeUb">射输卵管·Unbirth：受孕 %</label>
+        <input class="ue-input tune-input" id="ubTubeUb" type="number" min="0" max="100" step="1" data-section="unbirth" data-key="tube_unbirth">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="tube_unbirth" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubGrowStep">每次「变大」加多少比例</label>
+        <input class="ue-input tune-input" id="ubGrowStep" type="number" min="0.01" max="1" step="0.01" data-section="unbirth" data-key="grow_step">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="grow_step" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubHyPleasure">钻过处女膜加快感</label>
+        <input class="ue-input tune-input" id="ubHyPleasure" type="number" min="0" max="100" step="0.5" data-section="unbirth" data-key="hymen_pass_pleasure">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="hymen_pass_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubHyEndurance">钻过处女膜加忍耐</label>
+        <input class="ue-input tune-input" id="ubHyEndurance" type="number" min="0" max="100" step="0.5" data-section="unbirth" data-key="hymen_pass_endurance">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="hymen_pass_endurance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubHyWet">钻过处女膜加湿润</label>
+        <input class="ue-input tune-input" id="ubHyWet" type="number" min="0" max="100" step="0.5" data-section="unbirth" data-key="hymen_pass_wet">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="hymen_pass_wet" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubHyDesire">钻过处女膜加欲望</label>
+        <input class="ue-input tune-input" id="ubHyDesire" type="number" min="0" max="100" step="0.5" data-section="unbirth" data-key="hymen_pass_desire">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="hymen_pass_desire" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubInPleasure">待在里面每分钟加快感</label>
+        <input class="ue-input tune-input" id="ubInPleasure" type="number" min="0" max="100" step="0.1" data-section="unbirth" data-key="inside_pleasure">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="inside_pleasure" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubInWet">待在里面每分钟加湿润</label>
+        <input class="ue-input tune-input" id="ubInWet" type="number" min="0" max="100" step="0.1" data-section="unbirth" data-key="inside_wet">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="inside_wet" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubInEndurance">待在里面每分钟加忍耐</label>
+        <input class="ue-input tune-input" id="ubInEndurance" type="number" min="0" max="100" step="0.1" data-section="unbirth" data-key="inside_endurance">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="inside_endurance" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubInDev">待在里面每分钟加子宫开发度</label>
+        <input class="ue-input tune-input" id="ubInDev" type="number" min="0" max="100" step="0.01" data-section="unbirth" data-key="inside_dev">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="inside_dev" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubInSens">待在里面每分钟加子宫敏感度</label>
+        <input class="ue-input tune-input" id="ubInSens" type="number" min="0" max="10" step="0.001" data-section="unbirth" data-key="inside_sens">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="inside_sens" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubInMax">一次最多结算多少分钟</label>
+        <input class="ue-input tune-input" id="ubInMax" type="number" min="1" max="1440" step="1" data-section="unbirth" data-key="inside_max_minutes">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="inside_max_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubSteps">「生出」要几步</label>
+        <input class="ue-input tune-input" id="ubSteps" type="number" min="1" max="20" step="1" data-section="unbirth" data-key="birth_steps">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="birth_steps" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="ubResist">逆着来一次加欲望</label>
+        <input class="ue-input tune-input" id="ubResist" type="number" min="0" max="100" step="0.5" data-section="unbirth" data-key="resist_desire">
+        <button class="link-btn tune-reset" data-section="unbirth" data-key="resist_desire" type="button">跟随配置</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="editor" id="insertEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnInsertBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title"><h2>插入子宫设置</h2><p>门槛、痛感、容量都能改</p></div>
+    <span class="badge" id="insertEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <div class="ue-row">
+        <label for="isWet">需要多湿才能进</label>
+        <input class="ue-input tune-input" id="isWet" type="number" min="0" max="100" step="1" data-section="insert" data-key="wet_at">
+        <button class="link-btn tune-reset" data-section="insert" data-key="wet_at" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isPlea">需要多兴奋才能进</label>
+        <input class="ue-input tune-input" id="isPlea" type="number" min="0" max="100" step="1" data-section="insert" data-key="pleasure_at">
+        <button class="link-btn tune-reset" data-section="insert" data-key="pleasure_at" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isPain">正常插入痛感</label>
+        <input class="ue-input tune-input" id="isPain" type="number" min="0" max="100" step="0.5" data-section="insert" data-key="pain">
+        <button class="link-btn tune-reset" data-section="insert" data-key="pain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isOrgasmPain">高潮时插入痛感</label>
+        <input class="ue-input tune-input" id="isOrgasmPain" type="number" min="0" max="100" step="0.5" data-section="insert" data-key="orgasm_pain">
+        <button class="link-btn tune-reset" data-section="insert" data-key="orgasm_pain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isForcePain">强行插入痛感</label>
+        <input class="ue-input tune-input" id="isForcePain" type="number" min="0" max="100" step="0.5" data-section="insert" data-key="force_pain">
+        <button class="link-btn tune-reset" data-section="insert" data-key="force_pain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isForceP">强行扣多少快感</label>
+        <input class="ue-input tune-input" id="isForceP" type="number" min="0" max="100" step="0.5" data-section="insert" data-key="force_pleasure_drop">
+        <button class="link-btn tune-reset" data-section="insert" data-key="force_pleasure_drop" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isForceE">强行扣多少忍耐</label>
+        <input class="ue-input tune-input" id="isForceE" type="number" min="0" max="100" step="0.5" data-section="insert" data-key="force_endurance_drop">
+        <button class="link-btn tune-reset" data-section="insert" data-key="force_endurance_drop" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isForceW">强行加多少湿润</label>
+        <input class="ue-input tune-input" id="isForceW" type="number" min="0" max="100" step="0.5" data-section="insert" data-key="force_wet_gain">
+        <button class="link-btn tune-reset" data-section="insert" data-key="force_wet_gain" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isCap">插入占多少容量 ml</label>
+        <input class="ue-input tune-input" id="isCap" type="number" min="0" max="500" step="1" data-section="insert" data-key="capacity_ml">
+        <button class="link-btn tune-reset" data-section="insert" data-key="capacity_ml" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="isFetus">有胎儿时额外痛感</label>
+        <input class="ue-input tune-input" id="isFetus" type="number" min="0" max="100" step="0.5" data-section="insert" data-key="fetus_pain">
+        <button class="link-btn tune-reset" data-section="insert" data-key="fetus_pain" type="button">跟随配置</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+  <section class="editor" id="pregnancyEditor" hidden>
+    <header class="editor-head">
+      <button class="ghost-btn" id="btnPregnancyBack" type="button">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        返回
+      </button>
+      <div class="editor-title">
+        <h2>孕期设置</h2>
+        <p>胎儿撑长子宫 / 孕期子宫扩张提示词</p>
+      </div>
+      <span class="badge" id="pregnancyEditorStatus" data-tone="muted">—</span>
+    </header>
+    <div class="uterus-editor-body">
+      <section class="ue-block">
+        <h3>子宫扩张 <span class="ue-sub">孕早 / 中 / 晚各一句</span></h3>
+        <p class="ue-note">胎儿会把子宫撑长，最多到基础长度的「胎儿撑长子宫上限」倍；孕期提示词只写轻微发胀，不写成剧痛。</p>
+        <button class="act-btn" id="btnPregnancyPrompts" type="button">孕期提示词</button>
+      </section>
+    </div>
+  </section>
+
+<section class="editor" id="birthEditor" hidden>
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnBirthBack" type="button">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3.5 5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <div class="editor-title"><h2>生产设置</h2><p>产痛、安抚、断线保护；安抚关键词单独存</p></div>
+    <span class="badge" id="birthEditorStatus" data-tone="muted">—</span>
+  </header>
+  <div class="uterus-editor-body">
+    <section class="ue-block">
+      <div class="ue-row">
+        <label for="bsWater">羊水破加多少湿润</label>
+        <input class="ue-input tune-input" id="bsWater" type="number" min="0" max="100" step="1" data-section="birth" data-key="water_wet">
+        <button class="link-btn tune-reset" data-section="birth" data-key="water_wet" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsPainDue">临产期产痛</label>
+        <input class="ue-input tune-input" id="bsPainDue" type="number" min="0" max="100" step="0.5" data-section="birth" data-key="pain_due">
+        <button class="link-btn tune-reset" data-section="birth" data-key="pain_due" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsPainPre">生产前产痛</label>
+        <input class="ue-input tune-input" id="bsPainPre" type="number" min="0" max="100" step="0.5" data-section="birth" data-key="pain_pre">
+        <button class="link-btn tune-reset" data-section="birth" data-key="pain_pre" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsPainActive">生产中产痛</label>
+        <input class="ue-input tune-input" id="bsPainActive" type="number" min="0" max="100" step="0.5" data-section="birth" data-key="pain_active">
+        <button class="link-btn tune-reset" data-section="birth" data-key="pain_active" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsPainPer">产痛每分钟涨多少</label>
+        <input class="ue-input tune-input" id="bsPainPer" type="number" min="0" max="100" step="0.05" data-section="birth" data-key="pain_per_minute">
+        <button class="link-btn tune-reset" data-section="birth" data-key="pain_per_minute" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsPainMax">产痛上限</label>
+        <input class="ue-input tune-input" id="bsPainMax" type="number" min="1" max="100" step="1" data-section="birth" data-key="pain_max">
+        <button class="link-btn tune-reset" data-section="birth" data-key="pain_max" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsRelief">安抚一次降多少</label>
+        <input class="ue-input tune-input" id="bsRelief" type="number" min="0" max="100" step="0.5" data-section="birth" data-key="comfort_relief">
+        <button class="link-btn tune-reset" data-section="birth" data-key="comfort_relief" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsCooldown">安抚冷却（秒）</label>
+        <input class="ue-input tune-input" id="bsCooldown" type="number" min="0" max="3600" step="1" data-section="birth" data-key="comfort_cooldown_seconds">
+        <button class="link-btn tune-reset" data-section="birth" data-key="comfort_cooldown_seconds" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsGap">多久没读算插件没开（分钟）</label>
+        <input class="ue-input tune-input" id="bsGap" type="number" min="1" max="1440" step="1" data-section="birth" data-key="gap_minutes">
+        <button class="link-btn tune-reset" data-section="birth" data-key="gap_minutes" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsResume">恢复后先停多久（秒）</label>
+        <input class="ue-input tune-input" id="bsResume" type="number" min="0" max="3600" step="1" data-section="birth" data-key="resume_delay_seconds">
+        <button class="link-btn tune-reset" data-section="birth" data-key="resume_delay_seconds" type="button">跟随配置</button>
+      </div>
+      <div class="ue-row">
+        <label for="bsKeywords">安抚关键词（逗号分隔）</label>
+        <input class="ue-input" id="bsKeywords" type="text" placeholder="安抚, 抱, 陪, 揉, 慢点, 呼吸">
+        <button class="link-btn" id="btnBirthKeywordsSave" type="button">保存关键词</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<div class="toast" id="toast" hidden></div>
+<section class="editor" id="menstrualSettingsEditor" hidden>
+  <div class="settings-sheet">
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnMenstrualSettingsBack" type="button">返回</button>
+    <h2>卫生巾设置</h2>
+    <p>告知概率、提前时间、容量与更换规则</p>
+  </header>
+  <div class="notice-editor">
+    <h3>提前告知的提示词 <span class="badge tiny" id="msNoticeBadge" data-tone="muted">自定义</span></h3>
+    <textarea class="stage-text" id="msNoticeText" rows="4"></textarea>
+    <div class="notice-default">
+      <span>默认：<i id="msNoticeDefault"></i></span>
+      <button class="link-btn" id="btnMsNoticeRestore" type="button">恢复默认</button>
+    </div>
+  </div>
+  <div class="editor-body">
+    <label class="stage-label" for="msFlow">经期流量 ml / 小时</label>
+    <input class="stage-text" id="msFlow" type="number" min="0" max="200" step="0.5">
+    <label class="stage-label" for="msJitter">流量浮动 ±（0–1）</label>
+    <input class="stage-text" id="msJitter" type="number" min="0" max="1" step="0.05">
+    <label class="stage-label" for="msBloodCapacity">子宫经血容量 ml</label>
+    <input class="stage-text" id="msBloodCapacity" type="number" min="1" max="500" step="1">
+    <label class="stage-label" for="msDrain">经期结束后每小时排掉 ml</label>
+    <input class="stage-text" id="msDrain" type="number" min="0" max="200" step="0.5">
+    <p class="hint">经期流量会由卫生巾吸收/漏出；这里只影响经期结束后的残余。</p>
+    <label class="stage-label" for="msNoticeChance">提前告知概率 %</label>
+    <input class="stage-text" id="msNoticeChance" type="number" min="0" max="100" step="1">
+    <label class="stage-label" for="msWarnMinutes">提前多少分钟告知</label>
+    <input class="stage-text" id="msWarnMinutes" type="number" min="0" max="60" step="1">
+    <label class="stage-label" for="msChangeMinutes">换卫生巾耗时（分钟）</label>
+    <input class="stage-text" id="msChangeMinutes" type="number" min="0" max="60" step="1">
+    <label class="stage-label" for="msChangePercent">吸到百分之几换</label>
+    <input class="stage-text" id="msChangePercent" type="number" min="1" max="100" step="1">
+    <label class="stage-label" for="msChangeMin">两次更换至少隔几分钟</label>
+    <input class="stage-text" id="msChangeMin" type="number" min="1" max="240" step="1">
+    <label class="stage-label" for="msLiner">护垫容量 ml</label>
+    <input class="stage-text" id="msLiner" type="number" min="1" max="500" step="1">
+    <label class="stage-label" for="msRegular">日用卫生巾容量 ml</label>
+    <input class="stage-text" id="msRegular" type="number" min="1" max="500" step="1">
+    <label class="stage-label" for="msNight">夜用卫生巾容量 ml</label>
+    <input class="stage-text" id="msNight" type="number" min="1" max="500" step="1">
+    <label class="stage-label" for="msPants">安睡裤容量 ml</label>
+    <input class="stage-text" id="msPants" type="number" min="1" max="500" step="1">
+    <label class="stage-label" for="msAutoChoose">按时间/流量自己选型号</label>
+    <label class="mini-switch"><input type="checkbox" id="msAutoChoose"><b id="msAutoChooseText">开</b></label>
+  </div>
+  <div class="actions"><button class="act-btn" id="btnMenstrualSettingsSave" type="button">保存设置</button></div>
+  </div>
+</section>
+
+<section class="editor" id="sleepInsideKeywordsEditor" hidden>
+  <div class="settings-sheet keyword-sheet">
+  <header class="editor-head">
+    <button class="ghost-btn" id="btnSleepInsideKeywordsBack" type="button">返回</button>
+    <h2>插入入睡设置</h2>
+    <p>对话里出现关键词时，自动切换部位</p>
+  </header>
+  <div class="editor-body">
+    <label class="stage-label" for="siKwVagina">阴道关键词</label>
+    <textarea class="stage-text" id="siKwVagina" rows="3" placeholder="阴道, 前面, 插进来, 进来"></textarea>
+    <label class="stage-label" for="siKwAnus">后面关键词</label>
+    <textarea class="stage-text" id="siKwAnus" rows="3" placeholder="后面, 肛, 肛门, 后庭"></textarea>
+    <label class="stage-label" for="siKwTail">尾巴关键词</label>
+    <textarea class="stage-text" id="siKwTail" rows="3" placeholder="尾巴, 尾根"></textarea>
+    <label class="stage-label" for="siKwUnbirth">子宫关键词</label>
+    <textarea class="stage-text" id="siKwUnbirth" rows="3" placeholder="子宫, unbirth, 最里面, 深处"></textarea>
+  </div>
+  <p class="hint">逗号分隔；保存后立即生效。</p>
+  <div class="actions"><button class="act-btn" id="btnSleepInsideKeywordsSave" type="button">保存关键词</button></div>
+  </div>
+</section>
+
+<footer class="footer" id="footer"></footer>
+<script src="./app.js"></script>
+</body>
+</html>

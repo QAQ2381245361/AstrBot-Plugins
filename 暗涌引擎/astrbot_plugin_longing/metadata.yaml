@@ -1,0 +1,17 @@
+name: astrbot_plugin_longing
+display_name: "暗涌 · 引擎"
+short_desc: 暗涌的引擎与注入层（设置请到「暗涌」卡片）
+desc: |-
+  原版是 DSH 插件（JavaScript）。这里不重写引擎，而是**桥接**：
+  - 原版引擎用 Node 独立跑（C:\DeepSeek\暗涌\runner.mjs），负责衰减、耦合、事件、生成注入块
+  - 本插件只做两件事：把主人说的话推给引擎、把引擎写好的注入块拼进提示词
+
+  行为：
+  - 只在「主人私聊」注入，群聊永远零注入
+  - 引擎没跑 / 超时 → 自动降级读本地注入文件（10 分钟内有效），再不行就不注入
+  - 支持暂停：/暗涌暂停 30、/暗涌继续、/暗涌状态
+
+version: 1.0.0
+author: Nyakori/DeepSeek
+repo: ""
+astrbot_version: ">=4.20,<5"
